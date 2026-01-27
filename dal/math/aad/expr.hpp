@@ -385,14 +385,60 @@ namespace Dal::AAD {
     template <class E_>
     FORCE_INLINE bool operator==(double lhs, const Expression_<E_>& rhs) { return lhs == rhs.value(); }
 
-    template <class E_, class F_>
-    FORCE_INLINE std::partial_ordering operator<=>(const Expression_<E_>& lhs, const Expression_<F_>& rhs) { return lhs.value() <=> rhs.value(); }
+        template <class E_, class F_>
+    FORCE_INLINE bool operator!=(const Expression_<E_>& lhs, const Expression_<F_>& rhs) {
+        return lhs.value() != rhs.value();
+    }
 
     template <class E_>
-    FORCE_INLINE std::partial_ordering operator<=>(const Expression_<E_>& lhs, double rhs) { return lhs.value() <=> rhs; }
+    FORCE_INLINE bool operator!=(const Expression_<E_>& lhs, double rhs) { return lhs.value() != rhs; }
 
-    template <class F_>
-    FORCE_INLINE std::partial_ordering operator<=>(double lhs, const Expression_<F_>& rhs) { return lhs <=> rhs.value(); }
+    template <class E_>
+    FORCE_INLINE bool operator!=(double lhs, const Expression_<E_>& rhs) { return lhs != rhs.value(); }
+
+    template <class E_, class F_>
+    FORCE_INLINE bool operator<(const Expression_<E_>& lhs, const Expression_<F_>& rhs) {
+        return lhs.value() < rhs.value();
+    }
+
+    template <class E_>
+    FORCE_INLINE bool operator<(const Expression_<E_>& lhs, double rhs) { return lhs.value() < rhs; }
+
+    template <class E_>
+    FORCE_INLINE bool operator<(double lhs, const Expression_<E_>& rhs) { return lhs < rhs.value(); }
+
+    template <class E_, class F_>
+    FORCE_INLINE bool operator>(const Expression_<E_>& lhs, const Expression_<F_>& rhs) {
+        return lhs.value() > rhs.value();
+    }
+
+    template <class E_>
+    FORCE_INLINE bool operator>(const Expression_<E_>& lhs, double rhs) { return lhs.value() > rhs; }
+
+    template <class E_>
+    FORCE_INLINE bool operator>(double lhs, const Expression_<E_>& rhs) { return lhs > rhs.value(); }
+
+    template <class E_, class F_>
+    FORCE_INLINE bool operator<=(const Expression_<E_>& lhs, const Expression_<F_>& rhs) {
+        return lhs.value() <= rhs.value();
+    }
+
+    template <class E_>
+    FORCE_INLINE bool operator<=(const Expression_<E_>& lhs, double rhs) { return lhs.value() <= rhs; }
+
+    template <class E_>
+    FORCE_INLINE bool operator<=(double lhs, const Expression_<E_>& rhs) { return lhs <= rhs.value(); }
+
+    template <class E_, class F_>
+    FORCE_INLINE bool operator>=(const Expression_<E_>& lhs, const Expression_<F_>& rhs) {
+        return lhs.value() >= rhs.value();
+    }
+
+    template <class E_>
+    FORCE_INLINE bool operator>=(const Expression_<E_>& lhs, double rhs) { return lhs.value() >= rhs; }
+
+    template <class E_>
+    FORCE_INLINE bool operator>=(double lhs, const Expression_<E_>& rhs) { return lhs >= rhs.value(); }
 
     // unary operators +/-
 

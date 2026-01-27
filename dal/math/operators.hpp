@@ -22,7 +22,11 @@ namespace Dal {
     using AAD::operator+;
     using AAD::operator/;
     using AAD::operator-;
-    using AAD::operator<=>;
+    using AAD::operator!=;
+    using AAD::operator<;
+    using AAD::operator<=;
+    using AAD::operator>;
+    using AAD::operator>=;
     using AAD::operator==;
     using AAD::exp;
     using AAD::abs;
