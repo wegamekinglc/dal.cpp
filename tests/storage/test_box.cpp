@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include <dal/platform/platform.hpp>
 #include <dal/storage/box.hpp>
-#include <dal/storage/Splat.hpp>
+#include <dal/storage/splat.hpp>
 #include <dal/time/datetime.hpp>
 
 using namespace Dal;
