@@ -1,6 +1,7 @@
 @echo off
 
 call :set_variable DAL_DIR "%CD%" %DAL_DIR%
+call :set_variable BUILD_TYPE "Release" %BUILD_TYPE%
 call :set_variable MSVC_VERSION "Visual Studio 17 2022" %MSVC_VERSION%
 
 echo BUILD_TYPE:  %BUILD_TYPE%
