@@ -92,7 +92,9 @@ message("-- USE_COVERAGE: ${USE_COVERAGE}")
 include_directories(${CMAKE_SOURCE_DIR})
 message("-- USE AAD framework: AADET")
 
-add_subdirectory(external/googletest-1.17.0)
+add_subdirectory(${CMAKE_SOURCE_DIR}/external/googletest-1.17.0)
+add_subdirectory(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0)
+include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 
 add_subdirectory(dal)
 add_subdirectory(public)

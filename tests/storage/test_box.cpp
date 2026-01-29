@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include <dal/platform/platform.hpp>
 #include <dal/storage/box.hpp>
-#include <dal/storage/splat.hpp>
+#include <dal/storage/json.hpp>
 #include <dal/time/datetime.hpp>
 
 using namespace Dal;
@@ -20,8 +20,8 @@ TEST(StorageTest, TestBox) {
     mat(1, 2) = DateTime_(Date_(2023, 1, 22), 0.5);
 
     Box_ box("mybox", mat);
-    auto dst = Splat(box);
-    Handle_<Storable_> rtn = UnSplat(dst, true);
+    auto dst = JSON::WriteString(box);
+    Handle_<Storable_> rtn = JSON::ReadString(dst, true);
     Handle_<Box_> val(std::dynamic_pointer_cast<const Box_>(rtn));
     Matrix_<Cell_> contents = val->contents_;
 
