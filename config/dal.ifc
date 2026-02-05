@@ -1,0 +1,28 @@
+@$(MACHINIST_TEMPLATE_DIR)
+<-\w+.if
+<-\w+.cpp;\w+.h;\w+.hpp!MG*;
+	/*IF
+	-IF
+public
+->auto/MG_#_public.inc
+	ExcelSource
+->auto/MG_#_public.htm
+	HtmlHelp
+object|settings|storable|record
+->auto/MG_#_object.inc
+	C++Source
+->auto/MG_#_object.hpp
+	ClassDef
+->auto/java/#_object.java
+	JavaRecord
+->auto/MG_%_()%?{%_(version)}{_v%_(version)}_Write.inc
+	CWrite
+->auto/MG_%_()%?{%_(version)}{_v%_(version)}_Read.inc
+	CRead
+enumeration
+->auto/MG_#_enum.inc
+	C++Source
+->auto/MG_#_enum.hpp
+	C++Header
+->auto/java/#.java
+	JavaClass

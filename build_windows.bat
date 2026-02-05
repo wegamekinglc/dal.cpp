@@ -4,8 +4,29 @@ call :set_variable DAL_DIR "%CD%" %DAL_DIR%
 call :set_variable BUILD_TYPE "Release" %BUILD_TYPE%
 call :set_variable MSVC_VERSION "Visual Studio 17 2022" %MSVC_VERSION%
 
-echo BUILD_TYPE:  %BUILD_TYPE%
+echo BUILD_TYPE: %BUILD_TYPE%
 echo DAL_DIR: %DAL_DIR%
+
+cd external/machinist
+
+if exist build (
+  rem build folder already exists.
+) else (
+  mkdir build
+)
+
+echo Starting build machinist2
+call build_windows.bat
+echo End build machinist2
+
+set MACHINIST_TEMPLATE_DIR=%CD%\template\
+echo MACHINIST_TEMPLATE_DIR=%MACHINIST_TEMPLATE_DIR%
+bin\Machinist.exe -c %DAL_DIR%/config/dal.ifc -l %DAL_DIR%/config/dal.mgl -d %DAL_DIR%/dal
+bin\Machinist.exe -c %DAL_DIR%/config/dal.ifc -l %DAL_DIR%/config/dal.mgl -d %DAL_DIR%/public
+
+if %errorlevel% neq 0 exit /b 1
+
+cd ../..
 
 if exist build (
   rem build folder already exists.
