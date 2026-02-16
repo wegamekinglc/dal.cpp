@@ -28,6 +28,30 @@ if %errorlevel% neq 0 exit /b 1
 
 cd ../..
 
+cd external/xad
+
+if exist build (
+  rem build folder already exists.
+) else (
+  mkdir build
+)
+
+echo Starting build xad
+
+cd build
+cmake -G "%MSVC_VERSION%" --preset %BUILD_TYPE%-windows ..
+
+if %errorlevel% neq 0 exit /b 1
+
+msbuild xad.sln /m /p:Configuration=%BUILD_TYPE% /p:Platform=x64
+msbuild INSTALL.vcxproj /m:%NUMBER_OF_PROCESSORS% /p:Configuration=%BUILD_TYPE% /p:Platform=x64
+
+if %errorlevel% neq 0 exit /b 1
+
+echo End build xad
+
+cd ../../..
+
 if exist build (
   rem build folder already exists.
 ) else (

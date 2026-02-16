@@ -2,6 +2,7 @@
 // Created by wegam on 2020/12/21.
 //
 
+#include <XAD/XAD.hpp>
 #include <dal/platform/platform.hpp>
 #include <dal/math/operators.hpp>
 #include <dal/math/aad/aad.hpp>
@@ -108,6 +109,100 @@ int main() {
                   << std::setw(widths[4]) << std::right << numeraire_aad.Adjoint() / n_rounds
                   << std::setw(widths[5]) << std::right << strike_aad.Adjoint() / n_rounds
                   << std::setw(widths[6]) << std::right << expiry_aad.Adjoint() / n_rounds
+                  << std::setw(widths[7]) << std::right << duration
+                  << std::endl;
+    }
+
+    {
+        // xad
+        using mode = xad::adj<double>;
+        using ADouble = mode::active_type;
+        using Tape = mode::tape_type;
+
+        Tape tape;
+
+        timer.Reset();
+
+        ADouble fwd_aad(fwd);
+        ADouble vol_aad(vol);
+        ADouble numeraire_aad(numeraire);
+        ADouble strike_aad(strike);
+        ADouble expiry_aad(expiry);
+
+        tape.registerInput(fwd_aad);
+        tape.registerInput(vol_aad);
+        tape.registerInput(numeraire_aad);
+        tape.registerInput(strike_aad);
+        tape.registerInput(expiry_aad);
+
+        ADouble price_aad(0.0);
+        tape.registerOutput(price_aad);
+
+        tape.newRecording();
+        auto current_pos = tape.getPosition();
+
+        for (int i = 0; i < n_rounds; ++i) {
+            tape.resetTo(current_pos);
+            price_aad = BlackTest(fwd_aad, vol_aad, numeraire_aad, strike_aad, expiry_aad, is_call);
+            xad::derivative(price_aad) = 1.0;
+            tape.computeAdjoints();
+        }
+
+        const auto duration = static_cast<int>(timer.Elapsed<milliseconds>());
+        std::cout << std::setw(widths[0]) << std::left << "XAD"
+                  << std::fixed
+                  << std::setprecision(6)
+                  << std::setw(widths[1]) << std::right << price_aad.value()
+                  << std::setw(widths[2]) << std::right << xad::derivative(fwd_aad) / n_rounds
+                  << std::setw(widths[3]) << std::right << xad::derivative(vol_aad) / n_rounds
+                  << std::setw(widths[4]) << std::right << xad::derivative(numeraire_aad) / n_rounds
+                  << std::setw(widths[5]) << std::right << xad::derivative(strike_aad) / n_rounds
+                  << std::setw(widths[6]) << std::right << xad::derivative(expiry_aad) / n_rounds
+                  << std::setw(widths[7]) << std::right << duration
+                  << std::endl;
+    }
+
+    {
+        // xad with jit
+        using mode = xad::adj<double>;
+        using ADouble = mode::active_type;
+
+        // Create JIT compiler and register inputs
+        xad::JITCompiler<double, 1> jit;
+
+        timer.Reset();
+
+        ADouble fwd_aad(fwd);
+        ADouble vol_aad(vol);
+        ADouble numeraire_aad(numeraire);
+        ADouble strike_aad(strike);
+        ADouble expiry_aad(expiry);
+
+        jit.registerInput(fwd_aad);
+        jit.registerInput(vol_aad);
+        jit.registerInput(numeraire_aad);
+        jit.registerInput(strike_aad);
+        jit.registerInput(expiry_aad);
+
+        ADouble price_aad = BlackTest(fwd_aad, vol_aad, numeraire_aad, strike_aad, expiry_aad, is_call);
+        jit.registerOutput(price_aad);
+        jit.compile();
+
+        for (int i = 0; i < n_rounds; ++i) {
+            xad::derivative(price_aad) = 1.0;
+            jit.computeAdjoints();
+        }
+
+        const auto duration = static_cast<int>(timer.Elapsed<milliseconds>());
+        std::cout << std::setw(widths[0]) << std::left << "XAD w/ jit"
+                  << std::fixed
+                  << std::setprecision(6)
+                  << std::setw(widths[1]) << std::right << price_aad.value()
+                  << std::setw(widths[2]) << std::right << xad::derivative(fwd_aad)
+                  << std::setw(widths[3]) << std::right << xad::derivative(vol_aad)
+                  << std::setw(widths[4]) << std::right << xad::derivative(numeraire_aad)
+                  << std::setw(widths[5]) << std::right << xad::derivative(strike_aad)
+                  << std::setw(widths[6]) << std::right << xad::derivative(expiry_aad)
                   << std::setw(widths[7]) << std::right << duration
                   << std::endl;
     }

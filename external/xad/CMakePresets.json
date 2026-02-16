@@ -1,0 +1,62 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_MODULE_PATH": "${sourceDir}/cmake",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}"
+      }
+    },
+    {
+      "name": "Release-windows",
+      "inherits": "base",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "XAD_ENABLE_TESTS": "off",
+        "XAD_STATIC_MSVC_RUNTIME": "on",
+        "XAD_USE_STRONG_INLINE": "on",
+        "XAD_ENABLE_JIT": "on"
+      }
+    },
+    {
+      "name": "Debug-windows",
+      "inherits": "base",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "XAD_ENABLE_TESTS": "off",
+        "XAD_STATIC_MSVC_RUNTIME": "on",
+        "XAD_USE_STRONG_INLINE": "on",
+        "XAD_ENABLE_JIT": "on"
+      }
+    },
+    {
+      "name": "Release-linux",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "XAD_ENABLE_TESTS": "off",
+        "XAD_USE_STRONG_INLINE": "on",
+        "XAD_ENABLE_JIT": "on"
+      }
+    },
+    {
+      "name": "Debug-linux",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "XAD_ENABLE_TESTS": "off",
+        "XAD_USE_STRONG_INLINE": "on",
+        "XAD_ENABLE_JIT": "on"
+      }
+    }
+  ]
+}
