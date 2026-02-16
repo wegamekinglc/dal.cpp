@@ -32,6 +32,21 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+(
+cd external/xad || exit
+rm -rf build
+mkdir -p build
+
+cd build || exit
+cmake --preset ${BUILD_TYPE}-linux ..
+make -j"${NUM_CORES}"
+make install
+)
+
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+
 rm -rf build
 mkdir -p build
 (
