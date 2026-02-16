@@ -189,6 +189,7 @@ int main() {
         jit.compile();
 
         for (int i = 0; i < n_rounds; ++i) {
+            jit.clearDerivatives();
             xad::derivative(price_aad) = 1.0;
             jit.computeAdjoints();
         }
