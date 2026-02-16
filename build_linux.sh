@@ -1,0 +1,52 @@
+#!/bin/bash -e
+
+NUM_CORES=$(grep -c processor /proc/cpuinfo)
+export DAL_DIR=$PWD
+export LD_LIBRARY_PATH=$PWD/lib:$LD_LIBRARY_PATH
+export BUILD_TYPE=Release
+export SKIP_TESTS=false
+export USE_COVERAGE=false  # make it `false` when you need a full performance lib
+export CMAKE_EXPORT_COMPILE_COMMANDS=on
+
+echo NUM_CORES: $NUM_CORES
+echo BUILD_TYPE: $BUILD_TYPE
+echo SKIP_TESTS: $SKIP_TESTS
+echo USE_COVERAGE: $USE_COVERAGE
+echo DAL_DIR: "$DAL_DIR"
+echo CMAKE_EXPORT_COMPILE_COMMANDS: $CMAKE_EXPORT_COMPILE_COMMANDS
+
+(
+cd external/machinist || exit
+bash -e ./build_linux.sh
+)
+
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+
+export MACHINIST_TEMPLATE_DIR=$PWD/external/machinist/template/
+./external/machinist/bin/Machinist -c config/dal.ifc -l config/dal.mgl -d ./dal
+./external/machinist/bin/Machinist -c config/dal.ifc -l config/dal.mgl -d ./public
+
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+
+rm -rf build
+mkdir -p build
+(
+cd build || exit
+cmake --preset ${BUILD_TYPE}-linux -DUSE_COVERAGE=$USE_COVERAGE -DCMAKE_EXPORT_COMPILE_COMMANDS=$CMAKE_EXPORT_COMPILE_COMMANDS ..
+make -j"${NUM_CORES}"
+make install
+)
+
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+
+if [ "$SKIP_TESTS" = "false" ]; then
+  bin/test_suite
+fi
+
+echo "Finished building of Derivatives Algorithms Library"
