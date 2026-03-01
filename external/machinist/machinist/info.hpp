@@ -3,11 +3,12 @@
 #include "handle.hpp"
 #include <map>
 #include <string>
+#include <utility>
 
 // Info_ structure contains the high-level description of an object
 struct Info_ {
-    Info_(const Info_* parent, const Info_* root, const std::string& content)
-        : parent_(parent), root_(root), content_(content) {
+    Info_(const Info_* parent, const Info_* root, std::string  content)
+        : content_(std::move(content)), parent_(parent), root_(root) {
         if (!root)
             root_ = this;
     }
