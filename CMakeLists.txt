@@ -94,11 +94,11 @@ message("-- USE AAD framework: AADET")
 message("-- USE AAD framework: XAD")
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/external/googletest-1.17.0)
-add_subdirectory(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0)
+add_subdirectory(${CMAKE_SOURCE_DIR}/external/rapidjson)
 add_subdirectory(${CMAKE_SOURCE_DIR}/external/xad)
 add_subdirectory(${CMAKE_SOURCE_DIR}/external/machinist)
 
-include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
+include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson/include)
 include_directories(${CMAKE_SOURCE_DIR}/external/XAD/include)
 
 add_subdirectory(dal)
