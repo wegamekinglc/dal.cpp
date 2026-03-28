@@ -106,7 +106,7 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/external/xad)
 add_subdirectory(${CMAKE_SOURCE_DIR}/external/machinist)
 
 include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson/include)
-include_directories(${CMAKE_SOURCE_DIR}/external/XAD/include)
+include_directories(${CMAKE_SOURCE_DIR}/external/xad/include)
 
 add_subdirectory(dal)
 add_subdirectory(public)
