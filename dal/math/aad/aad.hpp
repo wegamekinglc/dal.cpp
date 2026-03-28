@@ -12,6 +12,8 @@
 
 #pragma once
 #include <memory>
+
+#ifndef DAL_USE_XAD_AAD
 #include <dal/math/aad/expr.hpp>
 
 namespace Dal::AAD {
@@ -38,3 +40,5 @@ namespace Dal::AAD {
     }
 
 } // namespace Dal
+#else
+#endif

@@ -90,8 +90,15 @@ message("-- BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
 message("-- USE_COVERAGE: ${USE_COVERAGE}")
 
 include_directories(${CMAKE_SOURCE_DIR})
-message("-- USE AAD framework: AADET")
-message("-- USE AAD framework: XAD")
+
+option(DAL_USE_XAD_AAD "use xad as aad framework" OFF)
+if (DAL_USE_XAD_AAD)
+    message("-- USE AAD framework: XAD")
+    add_definitions(-DDAL_USE_XAD_AAD)
+else()
+    message("-- USE AAD framework: AADET")
+endif ()
+
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/external/googletest-1.17.0)
 add_subdirectory(${CMAKE_SOURCE_DIR}/external/rapidjson)

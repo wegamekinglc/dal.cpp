@@ -42,7 +42,7 @@ int main() {
     bool is_call = true;
     Timer_ timer;
 
-    Vector_<int> widths = {14, 14, 14, 14, 14, 14, 14, 14};
+    Vector_<int> widths = {25, 14, 14, 14, 14, 14, 14, 14};
 
     std::cout << std::setw(widths[0]) << std::left << "Method"
               << std::setw(widths[1]) << std::right << "PV"
@@ -76,7 +76,7 @@ int main() {
     }
 
     {
-        // aadet
+        // builtin framework
         Number_::Tape()->Clear();
 
         timer.Reset();
@@ -100,7 +100,11 @@ int main() {
         }
 
         const auto duration = static_cast<int>(timer.Elapsed<milliseconds>());
-        std::cout << std::setw(widths[0]) << std::left << "AADET"
+#ifndef DAL_USE_XAD_AAD
+        std::cout << std::setw(widths[0]) << std::left << "Builtin (AADET)"
+#else
+        std::cout << std::setw(widths[0]) << std::left << "Builtin (XAD)"
+#endif
                   << std::fixed
                   << std::setprecision(6)
                   << std::setw(widths[1]) << std::right << price_aad.value()

@@ -6,8 +6,10 @@
 
 #include <mutex>
 #include <dal/platform/host.hpp>
-#include <dal/math/aad/tape.hpp>
 #include <dal/math/specialfunctions.hpp>
+
+#ifndef DAL_USE_XAD_AAD
+#include <dal/math/aad/tape.hpp>
 
 namespace Dal::AAD {
     template <class E_> struct Expression_ {
@@ -610,3 +612,5 @@ namespace Dal::AAD {
         }
     };
 } // namespace Dal
+#else
+#endif
