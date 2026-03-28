@@ -12,6 +12,8 @@
 
 #pragma once
 
+#ifndef DAL_USE_XAD_AAD
+
 #include <dal/math/aad/blocklist.hpp>
 #include <dal/math/aad/node.hpp>
 
@@ -63,3 +65,5 @@ namespace Dal::AAD {
         Iterator_ MarkIt();
     };
 } // namespace Dal::AAD
+#else
+#endif
