@@ -1,11 +1,16 @@
 @echo off
+call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" -startdir=none -arch=x64 -host_arch=x64
 
 call :set_variable DAL_DIR "%CD%" %DAL_DIR%
 call :set_variable BUILD_TYPE "Release" %BUILD_TYPE%
+call :set_variable SKIP_TESTS "false" %SKIP_TESTS%
 call :set_variable MSVC_VERSION "Visual Studio 17 2022" %MSVC_VERSION%
 
 echo BUILD_TYPE: %BUILD_TYPE%
 echo DAL_DIR: %DAL_DIR%
+
+rmdir /q /s bin
+rmdir /q /s lib
 
 cd external/machinist
 
@@ -71,7 +76,7 @@ if %errorlevel% neq 0 exit /b 1
 cd ..
 
 
-if "%SKIP_TESTS%"=="false" (
+if "%SKIP_TESTS%" == "false" (
     echo "starting run unit tests suite"
     bin\test_suite.exe
 )
