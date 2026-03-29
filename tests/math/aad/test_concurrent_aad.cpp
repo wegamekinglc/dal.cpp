@@ -52,8 +52,8 @@ TEST(AADTest, TestAADMutiThread) {
             SimpleModel_ model(s1, s2);
             Number_::Tape()->Rewind();
 
-            model.s1_.PutOnTape();
-            model.s2_.PutOnTape();
+            PutOnTape(model.s1_);
+            PutOnTape(model.s2_);
             Number_::Tape()->Mark();
 
             auto& result = final_results[n_thread];
@@ -62,13 +62,14 @@ TEST(AADTest, TestAADMutiThread) {
             for (size_t i = 0; i < rounds_in_tasks; ++i) {
                 Number_::Tape()->RewindToMark();
                 Number_ res = model.s1_ * model.s2_;
-                res.PropagateToMark();
-                sum_val += res.value();
+                Adjoint(res) = 1.0;
+                Number_::Tape()->PropagateToMark();
+                sum_val += Value(res);
             }
             result[0] += sum_val;
-            Number_::PropagateMarkToStart();
-            result[1] += model.s1_.Adjoint() / static_cast<double>(n_rounds);
-            result[2] += model.s2_.Adjoint() / static_cast<double>(n_rounds);
+            Number_::Tape()->PropagateMarkToStart();
+            result[1] += Adjoint(model.s1_) / static_cast<double>(n_rounds);
+            result[2] += Adjoint(model.s2_) / static_cast<double>(n_rounds);
             return true;
         }));
         rounds_left -= rounds_in_tasks;

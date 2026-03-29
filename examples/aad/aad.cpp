@@ -86,17 +86,18 @@ int main() {
         Number_ strike_aad(strike);
         Number_ expiry_aad(expiry);
 
-        fwd_aad.PutOnTape();
-        vol_aad.PutOnTape();
-        numeraire_aad.PutOnTape();
-        strike_aad.PutOnTape();
-        expiry_aad.PutOnTape();
+        PutOnTape(fwd_aad);
+        PutOnTape(vol_aad);
+        PutOnTape(numeraire_aad);
+        PutOnTape(strike_aad);
+        PutOnTape(expiry_aad);
 
         Number_  price_aad{0.0};
         for (int i = 0; i < n_rounds; ++i) {
             Number_::Tape()->Rewind();
             price_aad = BlackTest(fwd_aad, vol_aad, numeraire_aad, strike_aad, expiry_aad, is_call);
-            price_aad.PropagateToStart();
+            Adjoint(price_aad) = 1.0;
+            Number_::Tape()->PropagateToStart();
         }
 
         const auto duration = static_cast<int>(timer.Elapsed<milliseconds>());
@@ -107,12 +108,12 @@ int main() {
 #endif
                   << std::fixed
                   << std::setprecision(6)
-                  << std::setw(widths[1]) << std::right << price_aad.value()
-                  << std::setw(widths[2]) << std::right << fwd_aad.Adjoint() / n_rounds
-                  << std::setw(widths[3]) << std::right << vol_aad.Adjoint() / n_rounds
-                  << std::setw(widths[4]) << std::right << numeraire_aad.Adjoint() / n_rounds
-                  << std::setw(widths[5]) << std::right << strike_aad.Adjoint() / n_rounds
-                  << std::setw(widths[6]) << std::right << expiry_aad.Adjoint() / n_rounds
+                  << std::setw(widths[1]) << std::right << Value(price_aad)
+                  << std::setw(widths[2]) << std::right << Adjoint(fwd_aad) / n_rounds
+                  << std::setw(widths[3]) << std::right << Adjoint(vol_aad) / n_rounds
+                  << std::setw(widths[4]) << std::right << Adjoint(numeraire_aad) / n_rounds
+                  << std::setw(widths[5]) << std::right << Adjoint(strike_aad) / n_rounds
+                  << std::setw(widths[6]) << std::right << Adjoint(expiry_aad) / n_rounds
                   << std::setw(widths[7]) << std::right << duration
                   << std::endl;
     }
@@ -156,7 +157,7 @@ int main() {
         std::cout << std::setw(widths[0]) << std::left << "XAD"
                   << std::fixed
                   << std::setprecision(6)
-                  << std::setw(widths[1]) << std::right << price_aad.value()
+                  << std::setw(widths[1]) << std::right << xad::value(price_aad)
                   << std::setw(widths[2]) << std::right << xad::derivative(fwd_aad) / n_rounds
                   << std::setw(widths[3]) << std::right << xad::derivative(vol_aad) / n_rounds
                   << std::setw(widths[4]) << std::right << xad::derivative(numeraire_aad) / n_rounds
@@ -202,7 +203,7 @@ int main() {
         std::cout << std::setw(widths[0]) << std::left << "XAD w/ jit"
                   << std::fixed
                   << std::setprecision(6)
-                  << std::setw(widths[1]) << std::right << price_aad.value()
+                  << std::setw(widths[1]) << std::right << xad::value(price_aad)
                   << std::setw(widths[2]) << std::right << xad::derivative(fwd_aad)
                   << std::setw(widths[3]) << std::right << xad::derivative(vol_aad)
                   << std::setw(widths[4]) << std::right << xad::derivative(numeraire_aad)

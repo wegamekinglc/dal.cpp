@@ -13,8 +13,10 @@
 
 namespace Dal::AAD {
     template <class E_> struct Expression_ {
-        [[nodiscard]] double value() const { return static_cast<const E_*>(this)->value(); }
-        explicit operator double() const { return value(); }
+        template <class EE_>
+        friend double Value(const Expression_<EE_>&);
+
+        explicit operator double() const { return Value(*this); }
     };
 
     template <class LHS_, class RHS_, class OP_>
@@ -25,20 +27,21 @@ namespace Dal::AAD {
 
     public:
         explicit BinaryExpression_(const Expression_<LHS_>& l, const Expression_<RHS_>& r)
-            : value_(OP_::Eval(l.value(), r.value())), lhs_(static_cast<const LHS_&>(l)),
+            : value_(OP_::Eval(Value(l), Value(r))), lhs_(static_cast<const LHS_&>(l)),
               rhs_(static_cast<const RHS_&>(r)) {}
 
-        [[nodiscard]] FORCE_INLINE double value() const { return value_; }
+        template <class L_, class R_, class O_>
+        friend double Value(const BinaryExpression_<L_, R_, O_>&);
 
         enum { numNumbers_ = static_cast<int>(LHS_::numNumbers_) + static_cast<int>(RHS_::numNumbers_) };
 
         template <size_t N_, size_t n_> void PushAdjoint(TapNode_& exprNode, double adjoint) const {
             if constexpr (LHS_::numNumbers_ > 0)
-                lhs_.template PushAdjoint<N_, n_>(exprNode, adjoint * OP_::LeftDerivative(lhs_.value(), rhs_.value(), value()));
+                lhs_.template PushAdjoint<N_, n_>(exprNode, adjoint * OP_::LeftDerivative(Value(lhs_), Value(rhs_), Value(*this)));
 
             if constexpr (RHS_::numNumbers_ > 0)
                 rhs_.template PushAdjoint<N_, n_ + LHS_::numNumbers_>(
-                    exprNode, adjoint * OP_::RightDerivative(lhs_.value(), rhs_.value(), value()));
+                    exprNode, adjoint * OP_::RightDerivative(Value(lhs_), Value(rhs_), Value(*this)));
         }
     };
 
@@ -147,19 +150,20 @@ namespace Dal::AAD {
 
     public:
         explicit UnaryExpression_(const Expression_<ARG_>& a)
-            : value_(OP_::Eval(a.value(), 0.0)), arg_(static_cast<const ARG_&>(a)) {}
+            : value_(OP_::Eval(Value(a), 0.0)), arg_(static_cast<const ARG_&>(a)) {}
 
         explicit UnaryExpression_(const Expression_<ARG_>& a, double b)
-            : value_(OP_::Eval(a.value(), b)), arg_(static_cast<const ARG_&>(a)), d_arg_(b) {}
+            : value_(OP_::Eval(Value(a), b)), arg_(static_cast<const ARG_&>(a)), d_arg_(b) {}
 
-        [[nodiscard]] FORCE_INLINE double value() const { return value_; }
+        template <class A_, class O_>
+        friend double Value(const UnaryExpression_<A_, O_>&);
 
         enum { numNumbers_ = ARG_::numNumbers_ };
 
         template <size_t N_, size_t n_>
         FORCE_INLINE void PushAdjoint(TapNode_& exprNode, double adjoint) const {
             if constexpr (ARG_::numNumbers_ > 0)
-                arg_.template PushAdjoint<N_, n_>(exprNode, adjoint * OP_::Derivative(arg_.value(), value_, d_arg_));
+                arg_.template PushAdjoint<N_, n_>(exprNode, adjoint * OP_::Derivative(Value(arg_), value_, d_arg_));
         }
     };
 
@@ -379,68 +383,68 @@ namespace Dal::AAD {
     // comparison same as traditional
 
     template <class E_, class F_>
-    FORCE_INLINE bool operator==(const Expression_<E_>& lhs, const Expression_<F_>& rhs) { return lhs.value() == rhs.value(); }
+    FORCE_INLINE bool operator==(const Expression_<E_>& lhs, const Expression_<F_>& rhs) { return Value(lhs) == Value(rhs); }
 
     template <class E_>
-    FORCE_INLINE bool operator==(const Expression_<E_>& lhs, double rhs) { return lhs.value() == rhs; }
+    FORCE_INLINE bool operator==(const Expression_<E_>& lhs, double rhs) { return Value(lhs) == rhs; }
 
     template <class E_>
-    FORCE_INLINE bool operator==(double lhs, const Expression_<E_>& rhs) { return lhs == rhs.value(); }
+    FORCE_INLINE bool operator==(double lhs, const Expression_<E_>& rhs) { return lhs == Value(rhs); }
 
         template <class E_, class F_>
     FORCE_INLINE bool operator!=(const Expression_<E_>& lhs, const Expression_<F_>& rhs) {
-        return lhs.value() != rhs.value();
+        return Value(lhs) != Value(rhs);
     }
 
     template <class E_>
-    FORCE_INLINE bool operator!=(const Expression_<E_>& lhs, double rhs) { return lhs.value() != rhs; }
+    FORCE_INLINE bool operator!=(const Expression_<E_>& lhs, double rhs) { return Value(lhs) != rhs; }
 
     template <class E_>
-    FORCE_INLINE bool operator!=(double lhs, const Expression_<E_>& rhs) { return lhs != rhs.value(); }
+    FORCE_INLINE bool operator!=(double lhs, const Expression_<E_>& rhs) { return lhs != Value(rhs); }
 
     template <class E_, class F_>
     FORCE_INLINE bool operator<(const Expression_<E_>& lhs, const Expression_<F_>& rhs) {
-        return lhs.value() < rhs.value();
+        return Value(lhs) < Value(rhs);
     }
 
     template <class E_>
-    FORCE_INLINE bool operator<(const Expression_<E_>& lhs, double rhs) { return lhs.value() < rhs; }
+    FORCE_INLINE bool operator<(const Expression_<E_>& lhs, double rhs) { return Value(lhs) < rhs; }
 
     template <class E_>
-    FORCE_INLINE bool operator<(double lhs, const Expression_<E_>& rhs) { return lhs < rhs.value(); }
+    FORCE_INLINE bool operator<(double lhs, const Expression_<E_>& rhs) { return lhs < Value(rhs); }
 
     template <class E_, class F_>
     FORCE_INLINE bool operator>(const Expression_<E_>& lhs, const Expression_<F_>& rhs) {
-        return lhs.value() > rhs.value();
+        return Value(lhs) > Value(rhs);
     }
 
     template <class E_>
-    FORCE_INLINE bool operator>(const Expression_<E_>& lhs, double rhs) { return lhs.value() > rhs; }
+    FORCE_INLINE bool operator>(const Expression_<E_>& lhs, double rhs) { return Value(lhs) > rhs; }
 
     template <class E_>
-    FORCE_INLINE bool operator>(double lhs, const Expression_<E_>& rhs) { return lhs > rhs.value(); }
+    FORCE_INLINE bool operator>(double lhs, const Expression_<E_>& rhs) { return lhs > Value(rhs); }
 
     template <class E_, class F_>
     FORCE_INLINE bool operator<=(const Expression_<E_>& lhs, const Expression_<F_>& rhs) {
-        return lhs.value() <= rhs.value();
+        return Value(lhs) <= Value(rhs);
     }
 
     template <class E_>
-    FORCE_INLINE bool operator<=(const Expression_<E_>& lhs, double rhs) { return lhs.value() <= rhs; }
+    FORCE_INLINE bool operator<=(const Expression_<E_>& lhs, double rhs) { return Value(lhs) <= rhs; }
 
     template <class E_>
-    FORCE_INLINE bool operator<=(double lhs, const Expression_<E_>& rhs) { return lhs <= rhs.value(); }
+    FORCE_INLINE bool operator<=(double lhs, const Expression_<E_>& rhs) { return lhs <= Value(rhs); }
 
     template <class E_, class F_>
     FORCE_INLINE bool operator>=(const Expression_<E_>& lhs, const Expression_<F_>& rhs) {
-        return lhs.value() >= rhs.value();
+        return Value(lhs) >= Value(rhs);
     }
 
     template <class E_>
-    FORCE_INLINE bool operator>=(const Expression_<E_>& lhs, double rhs) { return lhs.value() >= rhs; }
+    FORCE_INLINE bool operator>=(const Expression_<E_>& lhs, double rhs) { return Value(lhs) >= rhs; }
 
     template <class E_>
-    FORCE_INLINE bool operator>=(double lhs, const Expression_<E_>& rhs) { return lhs >= rhs.value(); }
+    FORCE_INLINE bool operator>=(double lhs, const Expression_<E_>& rhs) { return lhs >= Value(rhs); }
 
     // unary operators +/-
 
@@ -501,69 +505,21 @@ namespace Dal::AAD {
         }
 
         template <class E_>
-        FORCE_INLINE Number_(const Expression_<E_>& e) : value_(e.value()) {
+        FORCE_INLINE Number_(const Expression_<E_>& e) : value_(Value(e)) {
             FromExpr<E_>(static_cast<const E_&>(e));
         }
 
         template <class E_>
         FORCE_INLINE Number_& operator=(const Expression_<E_>& e) {
-            value_ = e.value();
+            value_ = Value(e);
             FromExpr<E_>(static_cast<const E_&>(e));
             return *this;
         }
 
-        FORCE_INLINE void PutOnTape() { node_ = CreateMultiNode<0>(); }
+        friend void PutOnTape(Number_&);
 
-        [[nodiscard]] FORCE_INLINE double value() const { return value_; }
-        FORCE_INLINE void ResetAdjoints() { tape_->ResetAdjoints(); }
-
-        [[nodiscard]] FORCE_INLINE double Adjoint() const {
-            return node_->Adjoint();
-        }
-
-        [[nodiscard]] FORCE_INLINE double& Adjoint() {
-            return node_->Adjoint();
-        }
-
-        static void PropagateAdjoints(Tape_::Iterator_ propagateFrom, Tape_::Iterator_ propagateTo) {
-            auto it = propagateFrom;
-            while (it != propagateTo) {
-                it->PropagateOne();
-                --it;
-            }
-            it->PropagateOne();
-        }
-
-        void PropagateAdjoints(Tape_::Iterator_ propagateTo) {
-            Adjoint() = 1.0;
-            auto it = tape_->Find(node_);
-            while (it != propagateTo) {
-                it->PropagateOne();
-                --it;
-            }
-            it->PropagateOne();
-        }
-
-        void PropagateToStart() {
-            PropagateAdjoints(tape_->Begin());
-        }
-
-        void PropagateToMark() {
-            PropagateAdjoints(tape_->MarkIt());
-        }
-
-        static void PropagateMarkToStart() {
-            PropagateAdjoints(std::prev(tape_->MarkIt()), tape_->Begin());
-        }
-
-        static void PropagateAdjointsMulti(Tape_::Iterator_ propagate_from, Tape_::Iterator_ propagate_to) {
-            auto it = propagate_from;
-            while (it != propagate_to) {
-                it->PropagateAll();
-                --it;
-            }
-            it->PropagateAll();
-        }
+        friend double Value(const Number_&);
+        friend double& Adjoint(const Number_&);
 
         // unary operators
 
@@ -611,6 +567,20 @@ namespace Dal::AAD {
             return *this;
         }
     };
+
+    template<class E_>
+    FORCE_INLINE double Value(const Expression_<E_>& e) { return Value(*static_cast<const E_*>(&e)); }
+
+    template <class LHS_, class RHS_, class OP_>
+    FORCE_INLINE double Value(const BinaryExpression_<LHS_, RHS_, OP_>& e) { return e.value_; }
+
+    template <class ARG_, class OP_>
+    FORCE_INLINE double Value(const UnaryExpression_<ARG_, OP_>& e) { return e.value_; }
+
+    FORCE_INLINE double Value(const Number_& num) { return num.value_; }
+    FORCE_INLINE double& Adjoint(const Number_& num) { return num.node_->Adjoint(); }
+
+    FORCE_INLINE void PutOnTape(Number_& n) { n.node_ = n.CreateMultiNode<0>(); }
 } // namespace Dal
 #else
 #endif

@@ -32,7 +32,7 @@ namespace Dal::AAD {
     }
 
     template <class IT_> FORCE_INLINE void PutOnTape(IT_ begin, IT_ end) {
-        std::for_each(begin, end, [](Number_& n) { n.PutOnTape(); });
+        std::for_each(begin, end, [](Number_& n) { PutOnTape(n); });
     }
 
     FORCE_INLINE void Clear(Tape_* tape) {

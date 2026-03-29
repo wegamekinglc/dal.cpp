@@ -27,18 +27,19 @@ TEST(AnalyticsTest, TestBlackScholesAAD) {
     Number_ forward(110.0);
     Number_ strike(120.0);
 
-    vol.PutOnTape();
-    T.PutOnTape();
-    strike.PutOnTape();
-    forward.PutOnTape();
+    PutOnTape(vol);
+    PutOnTape(T);
+    PutOnTape(strike);
+    PutOnTape(forward);
     Number_::Tape()->Mark();
 
     auto call_price = BlackScholes(forward, strike, vol, T);
-    ASSERT_NEAR(call_price.value(), 8.53592506466286, 1e-10);
-    call_price.PropagateToMark();
-    ASSERT_NEAR(forward.Adjoint(), 0.433995720171781, 1e-8);
-    ASSERT_NEAR(vol.Adjoint(), 61.2095050098522, 1e-8);
-    ASSERT_NEAR(T.Adjoint(), 3.06047525, 1e-8);
+    ASSERT_NEAR(Value(call_price), 8.53592506466286, 1e-10);
+    Adjoint(call_price) = 1.0;
+    Number_::Tape()->PropagateToMark();
+    ASSERT_NEAR(Adjoint(forward), 0.433995720171781, 1e-8);
+    ASSERT_NEAR(Adjoint(vol), 61.2095050098522, 1e-8);
+    ASSERT_NEAR(Adjoint(T), 3.06047525, 1e-8);
 }
 
 TEST(AnalyticsTest, TestBachelier) {
@@ -59,17 +60,18 @@ TEST(AnalyticsTest, TestBachelierAAD) {
     Number_ forward(110.0);
     Number_ strike(120.0);
 
-    vol.PutOnTape();
-    T.PutOnTape();
-    strike.PutOnTape();
-    forward.PutOnTape();
+    PutOnTape(vol);
+    PutOnTape(T);
+    PutOnTape(strike);
+    PutOnTape(forward);
     Number_::Tape()->Mark();
 
     auto call_price = Bachelier(forward, strike, vol, T);
-    call_price.PropagateToMark();
+    Adjoint(call_price) = 1.0;
+    Number_::Tape()->PropagateToMark();
 
-    ASSERT_NEAR(call_price.value(), 8.047832538, 1e-6);
-    ASSERT_NEAR(forward.Adjoint(), 0.37394902960009541, 1e-8);
-    ASSERT_NEAR(vol.Adjoint(), 0.53578740155317184, 1e-8);
-    ASSERT_NEAR(T.Adjoint(), 2.9468307085424446, 1e-8);
+    ASSERT_NEAR(Value(call_price), 8.047832538, 1e-6);
+    ASSERT_NEAR(Adjoint(forward), 0.37394902960009541, 1e-8);
+    ASSERT_NEAR(Adjoint(vol), 0.53578740155317184, 1e-8);
+    ASSERT_NEAR(Adjoint(T), 2.9468307085424446, 1e-8);
 }
