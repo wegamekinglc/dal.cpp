@@ -42,10 +42,10 @@ namespace Dal::Script {
                                E_& evaluator) {
         Number_::Tape()->Rewind();
         for (Number_* param : model.Parameters())
-            param->PutOnTape();
+            PutOnTape(*param);
 
         for (Number_& param : evaluator.ConstVarVals())
-            param.PutOnTape();
+            PutOnTape(param);
 
         model.Init(prd.TimeLine(), prd.DefLine());
         InitializePath(path);
@@ -213,16 +213,17 @@ namespace Dal::Script {
                         model->GeneratePath(gVec, &path);
                         product.EvaluateCompiled(path, evalState);
                         Number_ res = evalState.VarVals()[payoffIndex];
-                        res.PropagateToMark();
-                        sumValue += res.value();
+                        Adjoint(res) = 1.0;
+                        Number_::Tape()->PropagateToMark();
+                        sumValue += Value(res);
                     }
 
-                    Number_::PropagateMarkToStart();
+                    Number_::Tape()->PropagateMarkToStart();
                     for (size_t j = 0; j < nParams; ++j)
-                        results.risks_[j] += model->Parameters()[j]->Adjoint() / static_cast<double>(n_paths);
+                        results.risks_[j] += Adjoint(*model->Parameters()[j]) / static_cast<double>(n_paths);
 
                     for (size_t j = 0; j < nConstVars; ++j)
-                        results.risks_[j + nParams] +=  evalState.ConstVarVals()[j].Adjoint() / static_cast<double>(n_paths);
+                        results.risks_[j + nParams] +=  Adjoint(evalState.ConstVarVals()[j]) / static_cast<double>(n_paths);
                 }
                 else {
                     FuzzyEvaluator_<AAD::Number_> eval = product.BuildFuzzyEvaluator<AAD::Number_>(max_nested_ifs, eps);
@@ -234,16 +235,17 @@ namespace Dal::Script {
                         model->GeneratePath(gVec, &path);
                         product.Evaluate(path, eval);
                         Number_ res = eval.VarVals()[payoffIndex];
-                        res.PropagateToMark();
-                        sumValue += res.value();
+                        Adjoint(res) = 1.0;
+                        Number_::Tape()->PropagateToMark();
+                        sumValue += Value(res);
                     }
 
-                    Number_::PropagateMarkToStart();
+                    Number_::Tape()->PropagateMarkToStart();
                     for (size_t j = 0; j < nParams; ++j)
-                        results.risks_[j] += model->Parameters()[j]->Adjoint() / static_cast<double>(n_paths);
+                        results.risks_[j] += Adjoint(*model->Parameters()[j]) / static_cast<double>(n_paths);
 
                     for (size_t j = 0; j < nConstVars; ++j)
-                        results.risks_[j + nParams] +=  eval.ConstVarVals()[j].Adjoint() / static_cast<double>(n_paths);
+                        results.risks_[j + nParams] +=  Adjoint(eval.ConstVarVals()[j]) / static_cast<double>(n_paths);
 
                 }
                 results.aggregated_ += sumValue;

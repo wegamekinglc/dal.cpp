@@ -41,7 +41,7 @@ namespace Dal::AAD {
             TapNode_* node = nodes_.EmplaceBack(N_);
             if (multi_) {
                 node->pAdjoints_ = adjointsMulti_.EmplaceBackMulti(TapNode_::numAdj_);
-                std::fill(node->pAdjoints_, node->pAdjoints_ + TapNode_::numAdj_, 0.0);
+                std::fill_n(node->pAdjoints_, TapNode_::numAdj_, 0.0);
             }
 
             if constexpr (static_cast<bool>(N_)) {
@@ -54,15 +54,18 @@ namespace Dal::AAD {
         void ResetAdjoints();
         void Clear();
 
-        using Iterator_ = typename BlockList_<TapNode_, BLOCK_SIZE>::Iterator_;
+        using Iterator_ = BlockList_<TapNode_, BLOCK_SIZE>::Iterator_;
         Iterator_ Begin() { return nodes_.Begin(); }
         Iterator_ End() { return nodes_.End(); }
-        Iterator_ Find(TapNode_* node) { return nodes_.Find(node); }
 
         void Mark();
         void RewindToMark();
         void Rewind();
         Iterator_ MarkIt();
+
+        void PropagateMarkToStart();
+        void PropagateToStart();
+        void PropagateToMark();
     };
 } // namespace Dal::AAD
 #else

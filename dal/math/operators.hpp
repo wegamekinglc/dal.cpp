@@ -39,4 +39,8 @@ namespace Dal {
     using AAD::erfc;
     using AAD::sqrt;
 
+    using AAD::Value;
+    using AAD::Adjoint;
+    using AAD::PutOnTape;
+
 } // namespace Dal

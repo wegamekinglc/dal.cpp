@@ -7,6 +7,29 @@
 
 namespace Dal::AAD {
 
+    namespace {
+        void PropagateAdjoints(Tape_::Iterator_ propagateFrom, Tape_::Iterator_ propagateTo) {
+            auto it = propagateFrom;
+            while (it != propagateTo) {
+                it->PropagateOne();
+                --it;
+            }
+            it->PropagateOne();
+        }
+    }
+
+    void Tape_::PropagateMarkToStart() {
+        PropagateAdjoints(std::prev(MarkIt()), Begin());
+    }
+
+    void Tape_::PropagateToStart() {
+        PropagateAdjoints(std::prev(End()), Begin());
+    }
+
+    void Tape_::PropagateToMark() {
+        PropagateAdjoints(std::prev(End()), MarkIt());
+    }
+
     void Tape_::ResetAdjoints() {
         if (multi_)
             adjointsMulti_.Memset(0);

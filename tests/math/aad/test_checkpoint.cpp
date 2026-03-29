@@ -38,11 +38,11 @@ struct TestModel_ {
 
 auto ModelInit(TestModel_& model) {
     Number_::Tape()->Rewind();
-    model.fwd_.PutOnTape();
-    model.vol_.PutOnTape();
-    model.numeraire_.PutOnTape();
-    model.strike_.PutOnTape();
-    model.expiry_.PutOnTape();
+    PutOnTape(model.fwd_);
+    PutOnTape(model.vol_);
+    PutOnTape(model.numeraire_);
+    PutOnTape(model.strike_);
+    PutOnTape(model.expiry_);
     Number_::Tape()->Mark();
 }
 
@@ -53,18 +53,19 @@ TEST(AADTest, TestWithCheckpoint) {
     Number_ s1(1.0);
     Number_ s2(2.0);
 
-    s1.PutOnTape();
-    s2.PutOnTape();
+    PutOnTape(s1);
+    PutOnTape(s2);
 
     Number_ s3 = s1 + s2;
     Number_::Tape()->Mark();
     Number_ value = s3 * 2.0;
-    value.PropagateToMark();
+    Adjoint(value) = 1.0;
+    Number_::Tape()->PropagateToMark();
 
-    ASSERT_NEAR(value.value(), 6.0, 1e-10);
-    ASSERT_NEAR(s3.Adjoint(), 2.0, 1e-10);
-    Number_::PropagateMarkToStart();
-    ASSERT_NEAR(s1.Adjoint(), 2.0, 1e-10);
+    ASSERT_NEAR(Value(value), 6.0, 1e-10);
+    ASSERT_NEAR(Adjoint(s3), 2.0, 1e-10);
+    Number_::Tape()->PropagateMarkToStart();
+    ASSERT_NEAR(Adjoint(s1), 2.0, 1e-10);
 }
 
 TEST(AADTest, TestWithCheckpointWithForLoop) {
@@ -76,8 +77,8 @@ TEST(AADTest, TestWithCheckpointWithForLoop) {
         Number_ s1(1.0);
         Number_ s2(2.0);
 
-        s1.PutOnTape();
-        s2.PutOnTape();
+        PutOnTape(s1);
+        PutOnTape(s2);
 
         Number_ s3 = s1 + s2;
         Number_::Tape()->Mark();
@@ -88,18 +89,19 @@ TEST(AADTest, TestWithCheckpointWithForLoop) {
                 value = s3 * 1.01;
             else
                 value = s3 * 0.99;
-            value.PropagateToMark();
+            Adjoint(value) = 1.0;
+            Number_::Tape()->PropagateToMark();
             if (i % 2 == 0) {
-                ASSERT_NEAR(value.value(), 3 * 1.01, 1e-10);
-                ASSERT_NEAR(s3.Adjoint(), (i + 1) / 2 * 2 + (i + 1) % 2 * 1.01, 1e-10);
+                ASSERT_NEAR(Value(value), 3 * 1.01, 1e-10);
+                ASSERT_NEAR(Adjoint(s3), (i + 1) / 2 * 2 + (i + 1) % 2 * 1.01, 1e-10);
             } else {
-                ASSERT_NEAR(value.value(), 3 * 0.99, 1e-10);
-                ASSERT_NEAR(s3.Adjoint(), (i + 1) / 2 * 2 + (i + 1) % 2 * 0.99, 1e-10);
+                ASSERT_NEAR(Value(value), 3 * 0.99, 1e-10);
+                ASSERT_NEAR(Adjoint(s3), (i + 1) / 2 * 2 + (i + 1) % 2 * 0.99, 1e-10);
             }
         }
-        Number_::PropagateMarkToStart();
-        ASSERT_NEAR(s1.Adjoint(), n, 1e-10);
-        ASSERT_NEAR(s2.Adjoint(), n, 1e-10);
+        Number_::Tape()->PropagateMarkToStart();
+        ASSERT_NEAR(Adjoint(s1), n, 1e-10);
+        ASSERT_NEAR(Adjoint(s2), n, 1e-10);
     }
 }
 
@@ -148,17 +150,18 @@ TEST(AADTest, TestWithCheckpointWithMultiThreading) {
                                         model->strike_,
                                         model->expiry_,
                                         is_call);
-                res.PropagateToMark();
-                sum_val += res.value();
+                Adjoint(res) = 1.0;
+                Number_::Tape()->PropagateToMark();
+                sum_val += Value(res);
             }
 
-            Number_::PropagateMarkToStart();
+            Number_::Tape()->PropagateMarkToStart();
             results[0] += sum_val;
-            results[1] += model->fwd_.Adjoint() / static_cast<double>(n_rounds);
-            results[2] += model->vol_.Adjoint() / static_cast<double>(n_rounds);
-            results[3] += model->numeraire_.Adjoint() / static_cast<double>(n_rounds);
-            results[4] += model->strike_.Adjoint() / static_cast<double>(n_rounds);
-            results[5] += model->expiry_.Adjoint() / static_cast<double>(n_rounds);
+            results[1] += Adjoint(model->fwd_) / static_cast<double>(n_rounds);
+            results[2] += Adjoint(model->vol_) / static_cast<double>(n_rounds);
+            results[3] += Adjoint(model->numeraire_) / static_cast<double>(n_rounds);
+            results[4] += Adjoint(model->strike_) / static_cast<double>(n_rounds);
+            results[5] += Adjoint(model->expiry_) / static_cast<double>(n_rounds);
             return true;
         }));
         rounds_left -= rounds_in_tasks;
