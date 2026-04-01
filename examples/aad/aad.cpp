@@ -77,7 +77,7 @@ int main() {
 
     {
         // builtin framework
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
 
         timer.Reset();
         Number_ fwd_aad(fwd);
@@ -94,10 +94,10 @@ int main() {
 
         Number_  price_aad{0.0};
         for (int i = 0; i < n_rounds; ++i) {
-            Number_::Tape()->Rewind();
+            Rewind(*Number_::Tape());
             price_aad = BlackTest(fwd_aad, vol_aad, numeraire_aad, strike_aad, expiry_aad, is_call);
             Adjoint(price_aad) = 1.0;
-            Number_::Tape()->PropagateToStart();
+            PropagateToStart(*Number_::Tape());
         }
 
         const auto duration = static_cast<int>(timer.Elapsed<milliseconds>());

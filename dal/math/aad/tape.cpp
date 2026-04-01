@@ -8,6 +8,18 @@
 namespace Dal::AAD {
 
     namespace {
+        auto Begin(Tape_& tape) -> Tape_::Iterator_ {
+            return tape.nodes_.Begin();
+        }
+
+        auto End(Tape_& tape) -> Tape_::Iterator_ {
+            return tape.nodes_.End();
+        }
+
+        auto MarkIt(Tape_& tape) -> Tape_::Iterator_ {
+            return tape.nodes_.Mark();
+        }
+
         void PropagateAdjoints(Tape_::Iterator_ propagateFrom, Tape_::Iterator_ propagateTo) {
             auto it = propagateFrom;
             while (it != propagateTo) {
@@ -18,60 +30,47 @@ namespace Dal::AAD {
         }
     }
 
-    void Tape_::PropagateMarkToStart() {
-        PropagateAdjoints(std::prev(MarkIt()), Begin());
+    void PropagateMarkToStart(Tape_& tape) {
+        PropagateAdjoints(std::prev(MarkIt(tape)), Begin(tape));
     }
 
-    void Tape_::PropagateToStart() {
-        PropagateAdjoints(std::prev(End()), Begin());
+    void PropagateToStart(Tape_& tape) {
+        PropagateAdjoints(std::prev(End(tape)), Begin(tape));
     }
 
-    void Tape_::PropagateToMark() {
-        PropagateAdjoints(std::prev(End()), MarkIt());
+    void PropagateToMark(Tape_& tape) {
+        PropagateAdjoints(std::prev(End(tape)), MarkIt(tape));
     }
 
-    void Tape_::ResetAdjoints() {
-        if (multi_)
-            adjointsMulti_.Memset(0);
-        else {
-            for (auto it = nodes_.Begin(); it != nodes_.End(); ++it)
-                it->adjoint_ = 0.;
-        }
+    void Clear(Tape_& tape) {
+        tape.adjointsMulti_.Clear();
+        tape.ders_.Clear();
+        tape.argPtrs_.Clear();
+        tape.nodes_.Clear();
     }
 
-    void Tape_::Clear() {
-        adjointsMulti_.Clear();
-        ders_.Clear();
-        argPtrs_.Clear();
-        nodes_.Clear();
+    void Mark(Tape_& tape) {
+        if (Tape_::multi_)
+            tape.adjointsMulti_.SetMark();
+        tape.ders_.SetMark();
+        tape.argPtrs_.SetMark();
+        tape.nodes_.SetMark();
     }
 
-    void Tape_::Mark() {
-        if (multi_)
-            adjointsMulti_.SetMark();
-        ders_.SetMark();
-        argPtrs_.SetMark();
-        nodes_.SetMark();
+    void Rewind(Tape_& tape)  {
+        if (Tape_::multi_)
+            tape.adjointsMulti_.Rewind();
+        tape.ders_.Rewind();
+        tape.argPtrs_.Rewind();
+        tape.nodes_.Rewind();
     }
 
-    void Tape_::Rewind()  {
-        if (multi_)
-            adjointsMulti_.Rewind();
-        ders_.Rewind();
-        argPtrs_.Rewind();
-        nodes_.Rewind();
-    }
-
-    void Tape_::RewindToMark() {
-        if (multi_)
-            adjointsMulti_.RewindToMark();
-        ders_.RewindToMark();
-        argPtrs_.RewindToMark();
-        nodes_.RewindToMark();
-    }
-
-    Tape_::Iterator_ Tape_::MarkIt() {
-        return nodes_.Mark();
+    void RewindToMark(Tape_& tape) {
+        if (Tape_::multi_)
+            tape.adjointsMulti_.RewindToMark();
+        tape.ders_.RewindToMark();
+        tape.argPtrs_.RewindToMark();
+        tape.nodes_.RewindToMark();
     }
 
 

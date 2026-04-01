@@ -33,7 +33,7 @@ namespace Dal {
 
             std::cout << "stating initialization global tape ..." << std::endl;
             static AAD::Tape_ tape;
-            AAD::Number_::SetTape(tape);
+            AAD::SetTape(tape);
 
             init_ = true;
             std::cout << "finished initialization all the global information." << std::endl;

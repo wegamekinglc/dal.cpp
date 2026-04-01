@@ -72,7 +72,7 @@ int main() {
 
     {
         // aadet
-        Number_::Tape()->Clear();
+        AAD::Clear(*Number_::Tape());
 
         timer.Reset();
         Number_ spot_aad(spot);
@@ -89,10 +89,10 @@ int main() {
         PutOnTape(strike_aad);
         PutOnTape(expiry_aad);
 
-        Number_::Tape()->Rewind();
+        AAD::Rewind(*Number_::Tape());
         Number_ price_aad = BlackTest(spot_aad, vol_aad, rate_aad, div_aad, strike_aad, expiry_aad, true);
         Adjoint(price_aad) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        AAD::PropagateToStart(*Number_::Tape());
 
         std::cout << std::setw(widths[0]) << std::left << "Analytical"
                   << std::setw(widths[1]) << std::right << "-"

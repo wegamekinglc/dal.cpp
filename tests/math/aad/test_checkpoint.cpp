@@ -37,18 +37,18 @@ struct TestModel_ {
 
 
 auto ModelInit(TestModel_& model) {
-    Number_::Tape()->Rewind();
+    Rewind(*Number_::Tape());
     PutOnTape(model.fwd_);
     PutOnTape(model.vol_);
     PutOnTape(model.numeraire_);
     PutOnTape(model.strike_);
     PutOnTape(model.expiry_);
-    Number_::Tape()->Mark();
+    Mark(*Number_::Tape());
 }
 
 
 TEST(AADTest, TestWithCheckpoint) {
-    Number_::Tape()->Clear();
+    Clear(*Number_::Tape());
 
     Number_ s1(1.0);
     Number_ s2(2.0);
@@ -57,19 +57,19 @@ TEST(AADTest, TestWithCheckpoint) {
     PutOnTape(s2);
 
     Number_ s3 = s1 + s2;
-    Number_::Tape()->Mark();
+    Mark(*Number_::Tape());
     Number_ value = s3 * 2.0;
     Adjoint(value) = 1.0;
-    Number_::Tape()->PropagateToMark();
+    PropagateToMark(*Number_::Tape());
 
     ASSERT_NEAR(Value(value), 6.0, 1e-10);
     ASSERT_NEAR(Adjoint(s3), 2.0, 1e-10);
-    Number_::Tape()->PropagateMarkToStart();
+    PropagateMarkToStart(*Number_::Tape());
     ASSERT_NEAR(Adjoint(s1), 2.0, 1e-10);
 }
 
 TEST(AADTest, TestWithCheckpointWithForLoop) {
-    Number_::Tape()->Clear();
+    Clear(*Number_::Tape());
 
     for (int m = 0; m < 3; ++m) {
 
@@ -81,16 +81,16 @@ TEST(AADTest, TestWithCheckpointWithForLoop) {
         PutOnTape(s2);
 
         Number_ s3 = s1 + s2;
-        Number_::Tape()->Mark();
+        Mark(*Number_::Tape());
         for (int i = 0; i < n; ++i) {
-            Number_::Tape()->RewindToMark();
+            RewindToMark(*Number_::Tape());
             Number_ value;
             if (i % 2 == 0)
                 value = s3 * 1.01;
             else
                 value = s3 * 0.99;
             Adjoint(value) = 1.0;
-            Number_::Tape()->PropagateToMark();
+            PropagateToMark(*Number_::Tape());
             if (i % 2 == 0) {
                 ASSERT_NEAR(Value(value), 3 * 1.01, 1e-10);
                 ASSERT_NEAR(Adjoint(s3), (i + 1) / 2 * 2 + (i + 1) % 2 * 1.01, 1e-10);
@@ -99,7 +99,7 @@ TEST(AADTest, TestWithCheckpointWithForLoop) {
                 ASSERT_NEAR(Adjoint(s3), (i + 1) / 2 * 2 + (i + 1) % 2 * 0.99, 1e-10);
             }
         }
-        Number_::Tape()->PropagateMarkToStart();
+        PropagateMarkToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), n, 1e-10);
         ASSERT_NEAR(Adjoint(s2), n, 1e-10);
     }
@@ -136,14 +136,14 @@ TEST(AADTest, TestWithCheckpointWithMultiThreading) {
 
         futures.push_back(pool->SpawnTask([&, rounds_in_tasks]() {
             const size_t n_thread = ThreadPool_::ThreadNum();
-            Number_::SetTape(tapes[n_thread]);
+            Dal::AAD::SetTape(tapes[n_thread]);
             std::unique_ptr<TestModel_> model = std::make_unique<TestModel_>(fwd, vol, numeraire, strike, expiry);
             ModelInit(*model);
             auto& results = final_results[n_thread];
 
             double sum_val = 0.0;
             for (size_t i = 0; i < rounds_in_tasks; ++i) {
-                Number_::Tape()->RewindToMark();
+                RewindToMark(*Number_::Tape());
                 Number_ res = BlackTest(model->fwd_,
                                         model->vol_,
                                         model->numeraire_,
@@ -151,11 +151,11 @@ TEST(AADTest, TestWithCheckpointWithMultiThreading) {
                                         model->expiry_,
                                         is_call);
                 Adjoint(res) = 1.0;
-                Number_::Tape()->PropagateToMark();
+                PropagateToMark(*Number_::Tape());
                 sum_val += Value(res);
             }
 
-            Number_::Tape()->PropagateMarkToStart();
+            PropagateMarkToStart(*Number_::Tape());
             results[0] += sum_val;
             results[1] += Adjoint(model->fwd_) / static_cast<double>(n_rounds);
             results[2] += Adjoint(model->vol_) / static_cast<double>(n_rounds);
@@ -175,7 +175,7 @@ TEST(AADTest, TestWithCheckpointWithMultiThreading) {
         for (size_t i = 0; i < greeks.size(); ++i)
             greeks[i] += res[i];
 
-    Number_::SetTape(*mainThreadPtr);
+    Dal::AAD::SetTape(*mainThreadPtr);
 
     ASSERT_NEAR(greeks[0] / static_cast<double>(n_rounds), 0.0714668, 1e-6);
     ASSERT_NEAR(greeks[1], 0.362002, 1e-6);

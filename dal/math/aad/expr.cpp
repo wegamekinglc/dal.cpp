@@ -6,6 +6,6 @@
 
 
 namespace Dal::AAD {
-    thread_local std::mutex Number_::mutex_{};
-    thread_local Tape_* Number_::tape_ = nullptr;
+    thread_local std::mutex tape_mutex_{};
+    thread_local Tape_* tape_ = nullptr;
 }

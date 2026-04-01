@@ -40,7 +40,7 @@ namespace Dal::Script {
                                AAD::Model_<AAD::Number_>& model,
                                Scenario_<AAD::Number_>& path,
                                E_& evaluator) {
-        Number_::Tape()->Rewind();
+        AAD::Rewind(*Number_::Tape());
         for (Number_* param : model.Parameters())
             PutOnTape(*param);
 
@@ -49,7 +49,7 @@ namespace Dal::Script {
 
         model.Init(prd.TimeLine(), prd.DefLine());
         InitializePath(path);
-        Number_::Tape()->Mark();
+        AAD::Mark(*Number_::Tape());
     }
 
     std::unique_ptr<Random_> CreateRNG(const String_& method, size_t n_dim, bool use_bb);
@@ -188,8 +188,8 @@ namespace Dal::Script {
             auto pathsInTask = std::min(pathsLeft, batchSize);
             futures.push_back(pool->SpawnTask([&, firstPath, pathsInTask]() {
                 const size_t threadNum = ThreadPool_::ThreadNum();
-                Number_::SetTape(tapes[threadNum]);
-                Number_::Tape()->Rewind();
+                AAD::SetTape(tapes[threadNum]);
+                AAD::Rewind(*Number_::Tape());
                 std::unique_ptr<AAD::Model_<AAD::Number_>> model = mdl->Clone();
                 model->Allocate(product.TimeLine(), product.DefLine());
 
@@ -208,17 +208,17 @@ namespace Dal::Script {
                     InitModel4ParallelAAD(product, *model, path, evalState);
 
                     for (size_t i = 0; i < pathsInTask; i++) {
-                        Number_::Tape()->RewindToMark();
+                        AAD::RewindToMark(*Number_::Tape());
                         random->FillNormal(&gVec);
                         model->GeneratePath(gVec, &path);
                         product.EvaluateCompiled(path, evalState);
                         Number_ res = evalState.VarVals()[payoffIndex];
                         Adjoint(res) = 1.0;
-                        Number_::Tape()->PropagateToMark();
+                        AAD::PropagateToMark(*Number_::Tape());
                         sumValue += Value(res);
                     }
 
-                    Number_::Tape()->PropagateMarkToStart();
+                    AAD::PropagateMarkToStart(*Number_::Tape());
                     for (size_t j = 0; j < nParams; ++j)
                         results.risks_[j] += Adjoint(*model->Parameters()[j]) / static_cast<double>(n_paths);
 
@@ -230,17 +230,17 @@ namespace Dal::Script {
                     InitModel4ParallelAAD(product, *model, path, eval);
 
                     for (size_t i = 0; i < pathsInTask; i++) {
-                        Number_::Tape()->RewindToMark();
+                        AAD::RewindToMark(*Number_::Tape());
                         random->FillNormal(&gVec);
                         model->GeneratePath(gVec, &path);
                         product.Evaluate(path, eval);
                         Number_ res = eval.VarVals()[payoffIndex];
                         Adjoint(res) = 1.0;
-                        Number_::Tape()->PropagateToMark();
+                        AAD::PropagateToMark(*Number_::Tape());
                         sumValue += Value(res);
                     }
 
-                    Number_::Tape()->PropagateMarkToStart();
+                    AAD::PropagateMarkToStart(*Number_::Tape());
                     for (size_t j = 0; j < nParams; ++j)
                         results.risks_[j] += Adjoint(*model->Parameters()[j]) / static_cast<double>(n_paths);
 
@@ -258,7 +258,7 @@ namespace Dal::Script {
         for (auto& future : futures)
             pool->ActiveWait(future);
 
-        Number_::SetTape(*mainThreadPtr);
+        AAD::SetTape(*mainThreadPtr);
         SimResults_ rtn(Dal::Vector::Join(mdl->ParameterLabels(), product.ConstVarNames()));
         for (auto& res: simResults) {
             rtn.aggregated_ += res.aggregated_;

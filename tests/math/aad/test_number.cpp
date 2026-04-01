@@ -11,7 +11,8 @@ using namespace Dal::AAD;
 TEST(AADTest, TestNumberAdd) {
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1(1.0);
         Number_ s2(2.0);
         PutOnTape(s1);
@@ -19,7 +20,7 @@ TEST(AADTest, TestNumberAdd) {
 
         Number_ value = s1 + s2;
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
 
         ASSERT_NEAR(Value(value), 3.0, 1e-10);
         ASSERT_NEAR(Adjoint(s1), 1.0, 1e-10);
@@ -27,26 +28,28 @@ TEST(AADTest, TestNumberAdd) {
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1 = 1.0;
         PutOnTape(s1);
 
         Number_ value = s1 + 2.0;
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
 
         ASSERT_NEAR(Value(value), 3.0, 1e-10);
         ASSERT_NEAR(Adjoint(s1), 1.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s2 = 2.0;
         PutOnTape(s2);
 
         Number_ value = 1.0 + s2;
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
 
         ASSERT_NEAR(Value(value), 3.0, 1e-10);
         ASSERT_NEAR(Adjoint(s2), 1.0, 1e-10);
@@ -56,7 +59,8 @@ TEST(AADTest, TestNumberAdd) {
 TEST(AADTest, TestNumberSub) {
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1(1.0);
         Number_ s2(2.0);
         PutOnTape(s1);
@@ -64,7 +68,7 @@ TEST(AADTest, TestNumberSub) {
 
         Number_ value = s1 - s2;
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
 
         ASSERT_NEAR(Value(value), -1.0, 1e-10);
         ASSERT_NEAR(Adjoint(s1), 1.0, 1e-10);
@@ -72,24 +76,26 @@ TEST(AADTest, TestNumberSub) {
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1(1.0);
         PutOnTape(s1);
 
         Number_ value = s1 - 2.0;
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 1.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s2(2.0);
         PutOnTape(s2);
         
         Number_ value = 1.0 - s2;
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s2), -1.0, 1e-10);
     }
 }
@@ -97,7 +103,8 @@ TEST(AADTest, TestNumberSub) {
 TEST(AADTest, TestNumberMultiply) {
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1(3.0);
         Number_ s2(2.0);
         PutOnTape(s1);
@@ -105,38 +112,41 @@ TEST(AADTest, TestNumberMultiply) {
 
         Number_ value = s1 * s2;
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Value(value), 6.0, 1e-10);
         ASSERT_NEAR(Adjoint(s1), 2.0, 1e-10);
         ASSERT_NEAR(Adjoint(s2), 3.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1 = 3.0;
         PutOnTape(s1);
 
         Number_ value = s1 * 2.0;
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 2.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s2 = 2.0;
         PutOnTape(s2);
 
         Number_ value = 3.0 * s2;
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s2), 3.0, 1e-10);
     }
 }
 
 TEST(AADTest, TestNumberDivide) {
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1(3.0);
         Number_ s2(2.0);
         PutOnTape(s1);
@@ -145,30 +155,32 @@ TEST(AADTest, TestNumberDivide) {
         Number_ value = s1 / s2;
         ASSERT_NEAR(Value(value), 1.5, 1e-10);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 1. / Value(s2), 1e-10);
         ASSERT_NEAR(Adjoint(s2), -Value(s1) / Value(s2) / Value(s2), 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1 = 3.0;
         PutOnTape(s1);
 
         Number_ value = s1 / 2.0;
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 1. / 2.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s2 = 2.0;
         PutOnTape(s2);
 
         Number_ value = 3.0 / s2;
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s2), -3.0 / Value(s2) / Value(s2), 1e-10);
     }
 }
@@ -176,7 +188,8 @@ TEST(AADTest, TestNumberDivide) {
 TEST(AADTest, TestNumberPow) {
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1(3.0);
         Number_ s2(2.0);
         PutOnTape(s1);
@@ -185,32 +198,34 @@ TEST(AADTest, TestNumberPow) {
         Number_ value = pow(s1, s2);
         ASSERT_NEAR(Value(value), std::pow(Value(s1), Value(s2)), 1e-10);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
 
         ASSERT_NEAR(Adjoint(s1), Value(s2) * std::pow(Value(s1), Value(s2) - 1), 1e-10);
         ASSERT_NEAR(Adjoint(s2), Value(value) * std::log(Value(s1)), 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1 = 3.0;
         Number_ s2(2.0);
         PutOnTape(s1);
 
         Number_ value = pow(s1, 2.0);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), Value(s2) * std::pow(Value(s1), 1.0), 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s2 = 2.0;
         PutOnTape(s2);
 
         Number_ value = pow(3.0, s2);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s2), Value(value) * std::log(3.0), 1e-10);
     }
 }
@@ -218,7 +233,8 @@ TEST(AADTest, TestNumberPow) {
 TEST(AADTest, TestNumberMax) {
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1(3.0);
         Number_ s2(2.0);
         PutOnTape(s1);
@@ -227,35 +243,38 @@ TEST(AADTest, TestNumberMax) {
         Number_ value = max(s1, s2);
         ASSERT_NEAR(Value(value), 3.0, 1e-10);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 1.0, 1e-10);
         ASSERT_NEAR(Adjoint(s2), 0.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1 = 3.0;
         PutOnTape(s1);
 
         Number_ value = max(s1, 2.0);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 1.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s2 = 2.0;
         PutOnTape(s2);
 
         Number_ value = max(3.0, s2);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s2), 0.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1 = 2.0;
         Number_ s2 = 3.0;
         PutOnTape(s1);
@@ -264,37 +283,40 @@ TEST(AADTest, TestNumberMax) {
         Number_ value = max(s1, s2);
         ASSERT_NEAR(Value(value), 3.0, 1e-10);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 0.0, 1e-10);
         ASSERT_NEAR(Adjoint(s2), 1.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1 = 2.0;
         PutOnTape(s1);
 
         Number_ value = max(s1, 3.0);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 0.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s2 = 3.0;
         PutOnTape(s2);
 
         Number_ value = max(2.0, s2);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s2), 1.0, 1e-10);
     }
 }
 
 TEST(AADTest, TestNumberMin) {
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1(3.0);
         Number_ s2(2.0);
         PutOnTape(s1);
@@ -303,35 +325,38 @@ TEST(AADTest, TestNumberMin) {
         Number_ value = min(s1, s2);
         ASSERT_NEAR(Value(value), 2.0, 1e-10);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 0.0, 1e-10);
         ASSERT_NEAR(Adjoint(s2), 1.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1 = 3.0;
         PutOnTape(s1);
 
         Number_ value = min(s1, 2.0);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 0.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s2 = 2.0;
         PutOnTape(s2);
 
         Number_ value = min(3.0, s2);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s2), 1.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1 = 2.0;
         Number_ s2 = 3.0;
         PutOnTape(s1);
@@ -340,30 +365,32 @@ TEST(AADTest, TestNumberMin) {
         Number_ value = min(s1, s2);
         ASSERT_NEAR(Value(value), 2.0, 1e-10);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 1.0, 1e-10);
         ASSERT_NEAR(Adjoint(s2), 0.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1 = 2.0;
         PutOnTape(s1);
 
         Number_ value = min(s1, 3.0);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 1.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s2 = 3.0;
         PutOnTape(s2);
 
         Number_ value = min(2.0, s2);
         Adjoint(value) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s2), 0.0, 1e-10);
     }
 }
@@ -372,7 +399,8 @@ TEST(AADTest, TestNumberMin) {
 TEST(AADTest, TestNumberEqualAdd) {
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1(1.0);
         Number_ s2(2.0);
         PutOnTape(s1);
@@ -382,13 +410,14 @@ TEST(AADTest, TestNumberEqualAdd) {
         s3 += s2;
         ASSERT_NEAR(Value(s3), 3.0, 1e-10);
         Adjoint( s3) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 1.0, 1e-10);
         ASSERT_NEAR(Adjoint(s2), 1.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1 = Number_(1.0);
         PutOnTape(s1);
         
@@ -396,7 +425,7 @@ TEST(AADTest, TestNumberEqualAdd) {
         s3 += 2.0;
         ASSERT_NEAR(Value(s3), 3.0, 1e-10);
         Adjoint( s3) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 1.0, 1e-10);
     }
 }
@@ -404,7 +433,8 @@ TEST(AADTest, TestNumberEqualAdd) {
 
 TEST(AADTest, TestNumberEqualSub) {
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1(1.0);
         Number_ s2(2.0);
         PutOnTape(s1);
@@ -414,13 +444,14 @@ TEST(AADTest, TestNumberEqualSub) {
         s3 -= s2;
         ASSERT_NEAR(Value(s3), -1.0, 1e-10);
         Adjoint( s3) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 1.0, 1e-10);
         ASSERT_NEAR(Adjoint(s2), -1.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1 = Number_(1.0);
         PutOnTape(s1);
         
@@ -428,7 +459,7 @@ TEST(AADTest, TestNumberEqualSub) {
         s3 -= 2.0;
         ASSERT_NEAR(Value(s3), -1.0, 1e-10);
         Adjoint( s3) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 1.0, 1e-10);
     }
 }
@@ -437,7 +468,8 @@ TEST(AADTest, TestNumberEqualSub) {
 TEST(AADTest, TestNumberEqualMultiply) {
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1(2.0);
         Number_ s2(3.0);
         PutOnTape(s1);
@@ -447,13 +479,14 @@ TEST(AADTest, TestNumberEqualMultiply) {
         s3 *= s2;
         ASSERT_NEAR(Value(s3), 6.0, 1e-10);
         Adjoint( s3) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 3.0, 1e-10);
         ASSERT_NEAR(Adjoint(s2), 2.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1 = 2.0;
         PutOnTape(s1);
 
@@ -461,7 +494,7 @@ TEST(AADTest, TestNumberEqualMultiply) {
         s3 *= 3.0;
         ASSERT_NEAR(Value(s3), 6.0, 1e-10);
         Adjoint( s3) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 3.0, 1e-10);
     }
 }
@@ -470,7 +503,8 @@ TEST(AADTest, TestNumberEqualMultiply) {
 TEST(AADTest, TestNumberEqualDivide) {
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1(2.0);
         Number_ s2(3.0);
         PutOnTape(s1);
@@ -480,13 +514,14 @@ TEST(AADTest, TestNumberEqualDivide) {
         s3 /= s2;
         ASSERT_NEAR(Value(s3), 0.66666666666666, 1e-10);
         Adjoint( s3) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 1 / 3.0, 1e-10);
         ASSERT_NEAR(Adjoint(s2), -2.0 / 9.0, 1e-10);
     }
 
     {
-        Number_::Tape()->Clear();
+        Clear(*Number_::Tape());
+
         Number_ s1 = 2.0;
         PutOnTape(s1);
         
@@ -494,85 +529,91 @@ TEST(AADTest, TestNumberEqualDivide) {
         s3 /= 3.0;
         ASSERT_NEAR(Value(s3), 0.66666666666666, 1e-10);
         Adjoint( s3) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        PropagateToStart(*Number_::Tape());
         ASSERT_NEAR(Adjoint(s1), 1 / 3.0, 1e-10);
     }
 }
 
 
 TEST(AADTest, TestNumberNegative) {
-    Number_::Tape()->Clear();
+    Clear(*Number_::Tape());
+
     Number_ s1(2.0);
     PutOnTape(s1);
     
     Number_ value = -s1;
     ASSERT_NEAR(Value(value), -2.0, 1e-10);
     Adjoint( value) = 1.0;
-    Number_::Tape()->PropagateToStart();
+    PropagateToStart(*Number_::Tape());
     ASSERT_NEAR(Adjoint(s1), -1.0, 1e-10);
 }
 
 
 TEST(AADTest, TestNumberPositive) {
-    Number_::Tape()->Clear();
+    Clear(*Number_::Tape());
+
     Number_ s1(2.0);
     PutOnTape(s1);
 
     Number_ value = +s1;
     ASSERT_NEAR(Value(value), 2.0, 1e-10);
     Adjoint( value) = 1.0;
-    Number_::Tape()->PropagateToStart();
+    PropagateToStart(*Number_::Tape());
     ASSERT_NEAR(Adjoint(s1), 1.0, 1e-10);
 }
 
 
 TEST(AADTest, TestNumberExp) {
-    Number_::Tape()->Clear();
+    Clear(*Number_::Tape());
+
     Number_ s1(2.0);
     PutOnTape(s1);
 
     Number_ value = exp(s1);
     ASSERT_NEAR(Value(value), std::exp(2.0), 1e-10);
     Adjoint( value) = 1.0;
-    Number_::Tape()->PropagateToStart();
+    PropagateToStart(*Number_::Tape());
     ASSERT_NEAR(Adjoint(s1), std::exp(2.0), 1e-10);
 }
 
 
 TEST(AADTest, TestNumberLog) {
-    Number_::Tape()->Clear();
+    Clear(*Number_::Tape());
+
     Number_ s1(2.0);
     PutOnTape(s1);
 
     Number_ value = log(s1);
     ASSERT_NEAR(Value(value), std::log(2.0), 1e-10);
     Adjoint( value) = 1.0;
-    Number_::Tape()->PropagateToStart();
+    PropagateToStart(*Number_::Tape());
     ASSERT_NEAR(Adjoint(s1), 0.5, 1e-10);
 }
 
 
 TEST(AADTest, TestNumberSqrt) {
-    Number_::Tape()->Clear();
+    Clear(*Number_::Tape());
+
     Number_ s1(2.0);
     PutOnTape(s1);
 
     Number_ value = sqrt(s1);
     ASSERT_NEAR(Value(value), std::sqrt(2.0), 1e-10);
     Adjoint( value) = 1.0;
-    Number_::Tape()->PropagateToStart();
+    PropagateToStart(*Number_::Tape());
     ASSERT_NEAR(Adjoint(s1), 0.5 / std::sqrt(2.0), 1e-10);
 }
 
 
 TEST(AADTest, TestNumberAbs) {
-    Number_::Tape()->Clear();
+    Clear(*Number_::Tape());
+
     Number_ s1(-2.0);
     PutOnTape(s1);
 
     Number_ value = abs(s1);
     ASSERT_NEAR(Value(value), 2.0, 1e-10);
     Adjoint( value) = 1.0;
-    Number_::Tape()->PropagateToStart();
+    PropagateToStart(*Number_::Tape());
     ASSERT_NEAR(Adjoint(s1), -1.0, 1e-10);
 }

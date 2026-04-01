@@ -47,27 +47,27 @@ TEST(AADTest, TestAADMutiThread) {
         const auto rounds_in_tasks = std::min(rounds_left, batch_size);
         futures.push_back(pool->SpawnTask([&, rounds_in_tasks]() {
             const size_t n_thread = ThreadPool_::ThreadNum();
-            Number_::SetTape(tapes[n_thread]);
+            Dal::AAD::SetTape(tapes[n_thread]);
 
             SimpleModel_ model(s1, s2);
-            Number_::Tape()->Rewind();
+            Rewind(*Number_::Tape());
 
             PutOnTape(model.s1_);
             PutOnTape(model.s2_);
-            Number_::Tape()->Mark();
+            Mark(*Number_::Tape());
 
             auto& result = final_results[n_thread];
 
             double sum_val = 0.0;
             for (size_t i = 0; i < rounds_in_tasks; ++i) {
-                Number_::Tape()->RewindToMark();
+                RewindToMark(*Number_::Tape());
                 Number_ res = model.s1_ * model.s2_;
                 Adjoint(res) = 1.0;
-                Number_::Tape()->PropagateToMark();
+                PropagateToMark(*Number_::Tape());
                 sum_val += Value(res);
             }
             result[0] += sum_val;
-            Number_::Tape()->PropagateMarkToStart();
+            PropagateMarkToStart(*Number_::Tape());
             result[1] += Adjoint(model.s1_) / static_cast<double>(n_rounds);
             result[2] += Adjoint(model.s2_) / static_cast<double>(n_rounds);
             return true;
@@ -83,7 +83,7 @@ TEST(AADTest, TestAADMutiThread) {
         for (size_t i = 0; i < greeks.size(); ++i)
         greeks[i] += res[i];
 
-    Number_::SetTape(*mainThreadPtr);
+    Dal::AAD::SetTape(*mainThreadPtr);
     ASSERT_NEAR(greeks[0] / n_rounds, 6.0, 1e-8);
     ASSERT_NEAR(greeks[1], 3.0, 1e-8);
     ASSERT_NEAR(greeks[2], 2.0, 1e-8);

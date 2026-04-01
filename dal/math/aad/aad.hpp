@@ -36,7 +36,7 @@ namespace Dal::AAD {
     }
 
     FORCE_INLINE void Clear(Tape_* tape) {
-        return tape->Clear();
+        return Clear(*tape);
     }
 
 } // namespace Dal
