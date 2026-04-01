@@ -25,6 +25,9 @@ namespace Dal::AAD {
     constexpr size_t DATA_SIZE = 65536;
 
     class Tape_ {
+    public:
+        using Iterator_ = BlockList_<TapNode_, BLOCK_SIZE>::Iterator_;
+
         static bool multi_;
         BlockList_<double, ADJ_SIZE> adjointsMulti_;
         BlockList_<double, DATA_SIZE> ders_;
@@ -35,8 +38,14 @@ namespace Dal::AAD {
         friend auto SetNumResultsForAAD(bool, size_t);
         friend struct NumResultsResetterForAAD_;
         friend class Number_;
+        friend void Clear(Tape_& tape);
+        friend void Mark(Tape_& tape);
+        friend void RewindToMark(Tape_& tape);
+        friend void Rewind(Tape_& tape);
+        friend void PropagateMarkToStart(Tape_& tape);
+        friend void PropagateToStart(Tape_& tape);
+        friend void PropagateToMark(Tape_& tape);
 
-    public:
         template <size_t N_> TapNode_* RecordNode() {
             TapNode_* node = nodes_.EmplaceBack(N_);
             if (multi_) {
@@ -51,22 +60,15 @@ namespace Dal::AAD {
             return node;
         }
 
-        void ResetAdjoints();
-        void Clear();
-
-        using Iterator_ = BlockList_<TapNode_, BLOCK_SIZE>::Iterator_;
-        Iterator_ Begin() { return nodes_.Begin(); }
-        Iterator_ End() { return nodes_.End(); }
-
-        void Mark();
-        void RewindToMark();
-        void Rewind();
-        Iterator_ MarkIt();
-
-        void PropagateMarkToStart();
-        void PropagateToStart();
-        void PropagateToMark();
     };
+
+    void Clear(Tape_& tape);
+    void Mark(Tape_& tape);
+    void RewindToMark(Tape_& tape);
+    void Rewind(Tape_& tape);
+    void PropagateMarkToStart(Tape_& tape);
+    void PropagateToStart(Tape_& tape);
+    void PropagateToMark(Tape_& tape);
 } // namespace Dal::AAD
 #else
 #endif

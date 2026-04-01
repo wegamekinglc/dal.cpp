@@ -76,7 +76,7 @@ int main() {
               << std::setw(widths[9]) << std::right << "Elapsed (ms)"
               << std::endl;
     {
-        Number_::Tape()->Clear();
+        AAD::Clear(*Number_::Tape());
         timer.Reset();
         Number_ spot_aad(spot);
         Number_ vol_aad(vol);
@@ -94,7 +94,7 @@ int main() {
 
         auto price_aad = DigitalTest<Number_>(spot_aad, vol_aad, rate_aad, div_aad, strike_aad, expiry_aad);
         Adjoint(price_aad) = 1.0;
-        Number_::Tape()->PropagateToStart();
+        AAD::PropagateToStart(*Number_::Tape());
 
         std::cout << std::setw(widths[0]) << std::left << "Analytic"
                   << std::setw(widths[1]) << std::right << ""
