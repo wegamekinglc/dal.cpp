@@ -188,7 +188,7 @@ namespace Dal::Script {
             auto pathsInTask = std::min(pathsLeft, batchSize);
             futures.push_back(pool->SpawnTask([&, firstPath, pathsInTask]() {
                 const size_t threadNum = ThreadPool_::ThreadNum();
-                Number_::SetTape(tapes[threadNum]);
+                AAD::SetTape(tapes[threadNum]);
                 AAD::Rewind(*Number_::Tape());
                 std::unique_ptr<AAD::Model_<AAD::Number_>> model = mdl->Clone();
                 model->Allocate(product.TimeLine(), product.DefLine());
@@ -258,7 +258,7 @@ namespace Dal::Script {
         for (auto& future : futures)
             pool->ActiveWait(future);
 
-        Number_::SetTape(*mainThreadPtr);
+        AAD::SetTape(*mainThreadPtr);
         SimResults_ rtn(Dal::Vector::Join(mdl->ParameterLabels(), product.ConstVarNames()));
         for (auto& res: simResults) {
             rtn.aggregated_ += res.aggregated_;

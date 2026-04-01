@@ -12,6 +12,14 @@
 #include <dal/math/aad/tape.hpp>
 
 namespace Dal::AAD {
+    extern thread_local Tape_* tape_;
+    extern thread_local std::mutex tape_mutex_;
+
+    FORCE_INLINE void SetTape(Tape_& tape) {
+        std::lock_guard<std::mutex> lock(tape_mutex_);
+        tape_ = &tape;
+    }
+
     template <class E_> struct Expression_ {
         template <class EE_>
         friend double Value(const Expression_<EE_>&);
@@ -473,14 +481,7 @@ namespace Dal::AAD {
             node_ = node;
         }
 
-        static thread_local std::mutex mutex_;
-        static thread_local Tape_* tape_;
-
     public:
-        static void SetTape(Tape_& tape) {
-            std::lock_guard<std::mutex> lock(mutex_);
-            tape_ = &tape;
-        }
 
         FORCE_INLINE static Tape_* Tape() {
             return tape_;

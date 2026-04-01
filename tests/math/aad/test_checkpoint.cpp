@@ -136,7 +136,7 @@ TEST(AADTest, TestWithCheckpointWithMultiThreading) {
 
         futures.push_back(pool->SpawnTask([&, rounds_in_tasks]() {
             const size_t n_thread = ThreadPool_::ThreadNum();
-            Number_::SetTape(tapes[n_thread]);
+            Dal::AAD::SetTape(tapes[n_thread]);
             std::unique_ptr<TestModel_> model = std::make_unique<TestModel_>(fwd, vol, numeraire, strike, expiry);
             ModelInit(*model);
             auto& results = final_results[n_thread];
@@ -175,7 +175,7 @@ TEST(AADTest, TestWithCheckpointWithMultiThreading) {
         for (size_t i = 0; i < greeks.size(); ++i)
             greeks[i] += res[i];
 
-    Number_::SetTape(*mainThreadPtr);
+    Dal::AAD::SetTape(*mainThreadPtr);
 
     ASSERT_NEAR(greeks[0] / static_cast<double>(n_rounds), 0.0714668, 1e-6);
     ASSERT_NEAR(greeks[1], 0.362002, 1e-6);
