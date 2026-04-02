@@ -141,6 +141,10 @@ namespace Dal::AAD {
     void NewRecording(Tape_& tape) {
         tape.newRecording();
     }
+
+    void Activate(Tape_& tape) {
+        tape.activate();
+    }
 } // namespace Dal::AAD
 #endif
 

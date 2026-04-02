@@ -125,7 +125,10 @@ TEST(AADTest, TestWithCheckpointWithMultiThreading) {
     Vector_<TaskHandle_> futures;
     futures.reserve(n_rounds / batch_size + 1);
 
-    Vector_<AAD::Tape_> tapes(n_threads, Tape_(false));
+    Vector_<AAD::Tape_> tapes;
+    tapes.reserve(n_threads);
+    for (size_t i = 0; i < n_threads; ++i)
+        tapes.emplace_back(false);
     Tape_* mainThreadPtr = AAD::Tape();
 
     int first_round = 0;
@@ -139,10 +142,8 @@ TEST(AADTest, TestWithCheckpointWithMultiThreading) {
 
         futures.push_back(pool->SpawnTask([&, rounds_in_tasks]() {
             const size_t n_thread = ThreadPool_::ThreadNum();
-            if (!Tape()) {
-                AAD::Activate(tapes[n_thread]);
-                Dal::AAD::SetTape(tapes[n_thread]);
-            }
+            AAD::Activate(tapes[n_thread]);
+            Dal::AAD::SetTape(tapes[n_thread]);
             std::unique_ptr<TestModel_> model = std::make_unique<TestModel_>(fwd, vol, numeraire, strike, expiry);
             ModelInit(*model);
             auto& results = final_results[n_thread];

@@ -87,6 +87,7 @@ namespace Dal::AAD {
     void PropagateToStart(Tape_& tape);
     void PropagateToMark(Tape_& tape);
     void NewRecording(Tape_& tape);
+    void Activate(Tape_& tape);
 } // namespace Dal::AAD
 
 #endif

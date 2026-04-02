@@ -33,7 +33,10 @@ TEST(AADTest, TestAADMutiThread) {
     ThreadPool_* pool = ThreadPool_::GetInstance();
     const size_t n_threads = pool->NumThreads();
 
-    Vector_<Tape_> tapes(n_threads + 1, Dal::AAD::Tape_(false));
+    Vector_<Dal::AAD::Tape_> tapes;
+    tapes.reserve(n_threads + 1);
+    for (size_t i = 0; i < n_threads + 1; ++i)
+        tapes.emplace_back(false);
     Tape_* mainThreadPtr = Dal::AAD::Tape();
 
     Vector_<TaskHandle_> futures;

@@ -180,7 +180,10 @@ namespace Dal::Script {
         int firstPath = 0;
         int pathsLeft = static_cast<int>(n_paths);
         auto payoffIndex = product.PayOffIdx();
-        Vector_<AAD::Tape_> tapes(nThreads, AAD::Tape_(false));
+        Vector_<AAD::Tape_> tapes;
+        tapes.reserve(nThreads);
+        for (size_t i = 0; i < nThreads; ++i)
+            tapes.emplace_back(false);
         AAD::Tape_* mainThreadPtr = AAD::Tape();
 
         SimResults_ values(Vector::Join(mdl->ParameterLabels(), product.ConstVarNames()));
