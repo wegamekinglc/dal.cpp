@@ -12,9 +12,9 @@
 
 #pragma once
 #include <memory>
+#include <dal/math/aad/expr.hpp>
 
 #ifndef DAL_USE_XAD_AAD
-#include <dal/math/aad/expr.hpp>
 
 namespace Dal::AAD {
 

@@ -77,7 +77,7 @@ int main() {
 
     {
         // builtin framework
-        Clear(*Number_::Tape());
+        AAD::Clear(*AAD::Tape());
 
         timer.Reset();
         Number_ fwd_aad(fwd);
@@ -94,10 +94,10 @@ int main() {
 
         Number_  price_aad{0.0};
         for (int i = 0; i < n_rounds; ++i) {
-            Rewind(*Number_::Tape());
+            AAD::Rewind(*AAD::Tape());
             price_aad = BlackTest(fwd_aad, vol_aad, numeraire_aad, strike_aad, expiry_aad, is_call);
             Adjoint(price_aad) = 1.0;
-            PropagateToStart(*Number_::Tape());
+            AAD::PropagateToStart(*AAD::Tape());
         }
 
         const auto duration = static_cast<int>(timer.Elapsed<milliseconds>());
@@ -124,7 +124,11 @@ int main() {
         using ADouble = mode::active_type;
         using Tape = mode::tape_type;
 
+#ifndef DAL_USE_XAD_AAD
         Tape tape;
+#else
+        auto& tape = *AAD::Tape();
+#endif
 
         timer.Reset();
 

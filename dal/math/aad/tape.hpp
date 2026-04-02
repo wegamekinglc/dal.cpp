@@ -26,6 +26,7 @@ namespace Dal::AAD {
 
     class Tape_ {
     public:
+        explicit Tape_(bool activate = true) {}
         using Iterator_ = BlockList_<TapNode_, BLOCK_SIZE>::Iterator_;
 
         static bool multi_;
@@ -69,6 +70,23 @@ namespace Dal::AAD {
     void PropagateMarkToStart(Tape_& tape);
     void PropagateToStart(Tape_& tape);
     void PropagateToMark(Tape_& tape);
+    void NewRecording(Tape_& tape);
+    void Activate(Tape_& tape);
 } // namespace Dal::AAD
 #else
+#include <XAD/XAD.hpp>
+
+namespace Dal::AAD {
+    using Tape_ = xad::adj<double>::tape_type;
+
+    void Clear(Tape_& tape);
+    void Mark(Tape_& tape);
+    void RewindToMark(Tape_& tape);
+    void Rewind(Tape_& tape);
+    void PropagateMarkToStart(Tape_& tape);
+    void PropagateToStart(Tape_& tape);
+    void PropagateToMark(Tape_& tape);
+    void NewRecording(Tape_& tape);
+} // namespace Dal::AAD
+
 #endif

@@ -15,6 +15,10 @@ namespace Dal::AAD {
     extern thread_local Tape_* tape_;
     extern thread_local std::mutex tape_mutex_;
 
+    FORCE_INLINE Tape_* Tape() {
+        return tape_;
+    }
+
     FORCE_INLINE void SetTape(Tape_& tape) {
         std::lock_guard<std::mutex> lock(tape_mutex_);
         tape_ = &tape;
@@ -482,12 +486,7 @@ namespace Dal::AAD {
         }
 
     public:
-
-        FORCE_INLINE static Tape_* Tape() {
-            return tape_;
-        }
-
-        enum { numNumbers_ = 1 };
+          enum { numNumbers_ = 1 };
 
         template <size_t N_, size_t n_>
         FORCE_INLINE void PushAdjoint(TapNode_& exprNode, double adjoint) const {
@@ -569,6 +568,10 @@ namespace Dal::AAD {
         }
     };
 
+    FORCE_INLINE double Value(double num) {
+        return num;
+    }
+
     template<class E_>
     FORCE_INLINE double Value(const Expression_<E_>& e) { return Value(*static_cast<const E_*>(&e)); }
 
@@ -584,4 +587,74 @@ namespace Dal::AAD {
     FORCE_INLINE void PutOnTape(Number_& n) { n.node_ = n.CreateMultiNode<0>(); }
 } // namespace Dal
 #else
+#include <dal/math/aad/tape.hpp>
+
+namespace Dal::AAD {
+    using Number_ = xad::adj<double>::active_type;
+
+    extern thread_local Tape_* tape_;
+    extern thread_local std::mutex tape_mutex_;
+
+    FORCE_INLINE Tape_* Tape() {
+        return tape_;
+    }
+
+    FORCE_INLINE void SetTape(Tape_& tape) {
+        std::lock_guard<std::mutex> lock(tape_mutex_);
+        tape_ = &tape;
+        Tape_::deactivateAll();
+        tape.activate();
+    }
+
+    using xad::operator*;
+    using xad::operator+;
+    using xad::operator-;
+    using xad::operator/;
+    using xad::operator==;
+    using xad::operator!=;
+    using xad::operator<;
+    using xad::operator<=;
+    using xad::operator>;
+    using xad::operator>=;
+
+    using xad::abs;
+    using xad::erfc;
+    using xad::exp;
+    using xad::log;
+    using xad::max;
+    using xad::min;
+    using xad::pow;
+    using xad::sqrt;
+
+    FORCE_INLINE double Value(const Number_& num) {
+        return xad::value(num);
+    }
+
+    FORCE_INLINE double Value(double num) {
+        return num;
+    }
+
+    FORCE_INLINE double Adjoint(const Number_& num) {
+        return xad::derivative(num);
+    }
+
+    FORCE_INLINE Number_::derivative_type& Adjoint(Number_& num) {
+        return xad::derivative(num);
+    }
+
+    FORCE_INLINE void PutOnTape(Number_& n) {
+        tape_->registerInput(n);
+    }
+
+
+    template <class T_>
+    FORCE_INLINE auto NPDF(const T_& z) {
+        return 0.3989422804014327 * exp(-0.5 * z * z);
+    }
+
+    template <class T_>
+    FORCE_INLINE auto NCDF(const T_& z) {
+        return 0.5 * erfc(-z / 1.4142135623730951);
+    }
+} // namespace Dal::AAD
 #endif

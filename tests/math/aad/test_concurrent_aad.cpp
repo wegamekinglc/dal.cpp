@@ -8,6 +8,8 @@
 #include <dal/math/aad/aad.hpp>
 #include <dal/concurrency/threadpool.hpp>
 
+#include "gmock/gmock-spec-builders.h"
+
 using Dal::ThreadPool_;
 using Dal::Vector_;
 using Dal::AAD::Tape_;
@@ -31,8 +33,8 @@ TEST(AADTest, TestAADMutiThread) {
     ThreadPool_* pool = ThreadPool_::GetInstance();
     const size_t n_threads = pool->NumThreads();
 
-    Vector_<Tape_> tapes(n_threads + 1);
-    Tape_* mainThreadPtr = Number_::Tape();
+    Vector_<Tape_> tapes(n_threads + 1, Dal::AAD::Tape_(false));
+    Tape_* mainThreadPtr = Dal::AAD::Tape();
 
     Vector_<TaskHandle_> futures;
     futures.reserve(n_rounds / batch_size + 1);
@@ -47,29 +49,31 @@ TEST(AADTest, TestAADMutiThread) {
         const auto rounds_in_tasks = std::min(rounds_left, batch_size);
         futures.push_back(pool->SpawnTask([&, rounds_in_tasks]() {
             const size_t n_thread = ThreadPool_::ThreadNum();
+            Dal::AAD::Activate(tapes[n_thread]);
             Dal::AAD::SetTape(tapes[n_thread]);
 
             SimpleModel_ model(s1, s2);
-            Rewind(*Number_::Tape());
+            Dal::AAD::Rewind(*Dal::AAD::Tape());
 
-            PutOnTape(model.s1_);
-            PutOnTape(model.s2_);
-            Mark(*Number_::Tape());
+            Dal::AAD::PutOnTape(model.s1_);
+            Dal::AAD::PutOnTape(model.s2_);
+            Dal::AAD::Mark(*Dal::AAD::Tape());
+            Dal::AAD::NewRecording(*Dal::AAD::Tape());
 
             auto& result = final_results[n_thread];
 
             double sum_val = 0.0;
             for (size_t i = 0; i < rounds_in_tasks; ++i) {
-                RewindToMark(*Number_::Tape());
+                Dal::AAD::RewindToMark(*Dal::AAD::Tape());
                 Number_ res = model.s1_ * model.s2_;
-                Adjoint(res) = 1.0;
-                PropagateToMark(*Number_::Tape());
-                sum_val += Value(res);
+                Dal::AAD::Adjoint(res) = 1.0;
+                Dal::AAD::PropagateToMark(*Dal::AAD::Tape());
+                sum_val += Dal::AAD::Value(res);
             }
             result[0] += sum_val;
-            PropagateMarkToStart(*Number_::Tape());
-            result[1] += Adjoint(model.s1_) / static_cast<double>(n_rounds);
-            result[2] += Adjoint(model.s2_) / static_cast<double>(n_rounds);
+            Dal::AAD::PropagateMarkToStart(*Dal::AAD::Tape());
+            result[1] += Dal::AAD::Adjoint(model.s1_) / static_cast<double>(n_rounds);
+            result[2] += Dal::AAD::Adjoint(model.s2_) / static_cast<double>(n_rounds);
             return true;
         }));
         rounds_left -= rounds_in_tasks;
