@@ -26,7 +26,8 @@ namespace Dal::AAD {
 
     class Tape_ {
     public:
-        explicit Tape_(bool activate = true) {}
+        explicit Tape_(bool = true) : pad_{} {}
+
         using Iterator_ = BlockList_<TapNode_, BLOCK_SIZE>::Iterator_;
 
         static bool multi_;

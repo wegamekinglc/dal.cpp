@@ -568,9 +568,7 @@ namespace Dal::AAD {
         }
     };
 
-    FORCE_INLINE double Value(double num) {
-        return num;
-    }
+    FORCE_INLINE double Value(const double& num) { return num; }
 
     template<class E_>
     FORCE_INLINE double Value(const Expression_<E_>& e) { return Value(*static_cast<const E_*>(&e)); }
@@ -585,7 +583,7 @@ namespace Dal::AAD {
     FORCE_INLINE double& Adjoint(const Number_& num) { return num.node_->Adjoint(); }
 
     FORCE_INLINE void PutOnTape(Number_& n) { n.node_ = n.CreateMultiNode<0>(); }
-} // namespace Dal
+} // namespace Dal::AAD
 #else
 #include <dal/math/aad/tape.hpp>
 

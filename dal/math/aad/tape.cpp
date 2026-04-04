@@ -74,9 +74,9 @@ namespace Dal::AAD {
         tape.nodes_.RewindToMark();
     }
 
-    void NewRecording(Tape_& tape) {}
-    void Activate(Tape_& tape) {}
-    void Deactivate(Tape_& tape) {}
+    void NewRecording(Tape_&) {}
+    void Activate(Tape_&) {}
+    void Deactivate(Tape_&) {}
 } // namespace Dal::AAD
 #else
 #include <unordered_map>

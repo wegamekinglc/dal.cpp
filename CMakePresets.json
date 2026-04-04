@@ -25,7 +25,9 @@
         "XAD_ENABLE_TESTS": "off",
         "XAD_STATIC_MSVC_RUNTIME": "on",
         "XAD_USE_STRONG_INLINE": "on",
-        "XAD_ENABLE_JIT": "on"
+        "XAD_ENABLE_JIT": "on",
+        "XAD_TAPE_REUSE_SLOTS": "off",
+        "DAL_USE_XAD_AAD": "off"
       }
     },
     {
@@ -39,7 +41,9 @@
         "XAD_ENABLE_TESTS": "off",
         "XAD_STATIC_MSVC_RUNTIME": "on",
         "XAD_USE_STRONG_INLINE": "on",
-        "XAD_ENABLE_JIT": "on"
+        "XAD_ENABLE_JIT": "on",
+        "XAD_TAPE_REUSE_SLOTS": "off",
+        "DAL_USE_XAD_AAD": "v"
       }
     },
     {
@@ -51,7 +55,9 @@
         "SKIP_TESTS": "false",
         "XAD_ENABLE_TESTS": "off",
         "XAD_USE_STRONG_INLINE": "on",
-        "XAD_ENABLE_JIT": "on"
+        "XAD_ENABLE_JIT": "on",
+        "XAD_TAPE_REUSE_SLOTS": "off",
+        "DAL_USE_XAD_AAD": "off"
       }
     },
     {
@@ -63,7 +69,9 @@
         "SKIP_TESTS": "false",
         "XAD_ENABLE_TESTS": "off",
         "XAD_USE_STRONG_INLINE": "on",
-        "XAD_ENABLE_JIT": "on"
+        "XAD_ENABLE_JIT": "on",
+        "XAD_TAPE_REUSE_SLOTS": "off",
+        "DAL_USE_XAD_AAD": "off"
       }
     }
   ]
