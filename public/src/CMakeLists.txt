@@ -12,7 +12,11 @@ else()
 endif()
 
 if(DAL_USE_XAD_AAD)
-    target_link_libraries(dal_public XAD::xad)
+    if (BUILD_SHARED_LIBS)
+        target_link_libraries(dal_library XAD::xad)
+    else()
+        target_link_libraries(dal_public XAD::xad)
+    endif()
 endif ()
 
 install(DIRECTORY . DESTINATION include/public/src
