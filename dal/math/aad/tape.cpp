@@ -79,7 +79,6 @@ namespace Dal::AAD {
     void Deactivate(Tape_&) {}
 } // namespace Dal::AAD
 #else
-#include <unordered_map>
 
 namespace Dal::AAD {
 
