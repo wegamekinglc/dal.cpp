@@ -36,7 +36,7 @@ TEST(AADTest, TestAADMutiThread) {
     for (size_t i = 0; i < n_threads + 1; ++i)
         tapes.emplace_back(false);
     Tape_* mainThreadPtr = Dal::AAD::Tape();
-    mainThreadPtr->deactivateAll();
+    Dal::AAD::Deactivate(*mainThreadPtr);
 
     Vector_<TaskHandle_> futures;
     futures.reserve(n_rounds / batch_size + 1);

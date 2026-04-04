@@ -72,6 +72,7 @@ namespace Dal::AAD {
     void PropagateToMark(Tape_& tape);
     void NewRecording(Tape_& tape);
     void Activate(Tape_& tape);
+    void Deactivate(Tape_& tape);
 } // namespace Dal::AAD
 #else
 #include <XAD/XAD.hpp>
@@ -88,6 +89,7 @@ namespace Dal::AAD {
     void PropagateToMark(Tape_& tape);
     void NewRecording(Tape_& tape);
     void Activate(Tape_& tape);
+    void Deactivate(Tape_& tape);
 } // namespace Dal::AAD
 
 #endif

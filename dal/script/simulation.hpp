@@ -33,7 +33,7 @@ namespace Dal::Script {
         }
     };
 
-    constexpr int BATCH_SIZE = 1024;
+    constexpr int BATCH_SIZE = 8192;
 
     template<class E_>
     void InitModel4ParallelAAD(const ScriptProduct_& prd,
@@ -186,7 +186,7 @@ namespace Dal::Script {
         for (size_t i = 0; i < nThreads + 1; ++i)
             tapes.emplace_back(false);
         AAD::Tape_* mainThreadPtr = AAD::Tape();
-        mainThreadPtr->deactivate();
+        AAD::Deactivate(*mainThreadPtr);
 
         SimResults_ values(Vector::Join(mdl->ParameterLabels(), product.ConstVarNames()));
         Vector_<SimResults_> simResults(nThreads, values);

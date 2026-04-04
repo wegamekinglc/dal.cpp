@@ -130,7 +130,7 @@ TEST(AADTest, TestWithCheckpointWithMultiThreading) {
     for (size_t i = 0; i < n_threads; ++i)
         tapes.emplace_back(false);
     Tape_* mainThreadPtr = AAD::Tape();
-    mainThreadPtr->deactivate();
+    AAD::Deactivate(*mainThreadPtr);
 
     int first_round = 0;
     int rounds_left = n_rounds;

@@ -76,6 +76,7 @@ namespace Dal::AAD {
 
     void NewRecording(Tape_& tape) {}
     void Activate(Tape_& tape) {}
+    void Deactivate(Tape_& tape) {}
 } // namespace Dal::AAD
 #else
 #include <unordered_map>
@@ -146,6 +147,10 @@ namespace Dal::AAD {
 
     void Activate(Tape_& tape) {
         tape.activate();
+    }
+
+    void Deactivate(Tape_& tape) {
+        tape.deactivate();
     }
 } // namespace Dal::AAD
 #endif
