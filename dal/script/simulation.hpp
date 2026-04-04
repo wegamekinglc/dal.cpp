@@ -47,11 +47,12 @@ namespace Dal::Script {
         for (AAD::Number_& param : evaluator.ConstVarVals())
             PutOnTape(param);
 
+        AAD::NewRecording(*AAD::Tape());
+
         model.Init(prd.TimeLine(), prd.DefLine());
         InitializePath(path);
 
         AAD::Mark(*AAD::Tape());
-        AAD::NewRecording(*AAD::Tape());
     }
 
     std::unique_ptr<Random_> CreateRNG(const String_& method, size_t n_dim, bool use_bb);
@@ -181,10 +182,11 @@ namespace Dal::Script {
         int pathsLeft = static_cast<int>(n_paths);
         auto payoffIndex = product.PayOffIdx();
         Vector_<AAD::Tape_> tapes;
-        tapes.reserve(nThreads);
-        for (size_t i = 0; i < nThreads; ++i)
+        tapes.reserve(nThreads + 1);
+        for (size_t i = 0; i < nThreads + 1; ++i)
             tapes.emplace_back(false);
         AAD::Tape_* mainThreadPtr = AAD::Tape();
+        mainThreadPtr->deactivate();
 
         SimResults_ values(Vector::Join(mdl->ParameterLabels(), product.ConstVarNames()));
         Vector_<SimResults_> simResults(nThreads, values);
@@ -193,8 +195,8 @@ namespace Dal::Script {
             auto pathsInTask = std::min(pathsLeft, batchSize);
             futures.push_back(pool->SpawnTask([&, firstPath, pathsInTask]() {
                 const size_t threadNum = ThreadPool_::ThreadNum();
-                AAD::Activate(tapes[threadNum]);
                 Dal::AAD::SetTape(tapes[threadNum]);
+                Dal::AAD::Clear(*Dal::AAD::Tape());
                 AAD::Rewind(*AAD::Tape());
                 std::unique_ptr<AAD::Model_<AAD::Number_>> model = mdl->Clone();
                 model->Allocate(product.TimeLine(), product.DefLine());

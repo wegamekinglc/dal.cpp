@@ -43,8 +43,8 @@ auto ModelInit(TestModel_& model) {
     PutOnTape(model.numeraire_);
     PutOnTape(model.strike_);
     PutOnTape(model.expiry_);
-    Mark(*Tape());
     NewRecording(*Tape());
+    Mark(*Tape());
 }
 
 
@@ -130,6 +130,7 @@ TEST(AADTest, TestWithCheckpointWithMultiThreading) {
     for (size_t i = 0; i < n_threads; ++i)
         tapes.emplace_back(false);
     Tape_* mainThreadPtr = AAD::Tape();
+    mainThreadPtr->deactivate();
 
     int first_round = 0;
     int rounds_left = n_rounds;
@@ -142,8 +143,8 @@ TEST(AADTest, TestWithCheckpointWithMultiThreading) {
 
         futures.push_back(pool->SpawnTask([&, rounds_in_tasks]() {
             const size_t n_thread = ThreadPool_::ThreadNum();
-            AAD::Activate(tapes[n_thread]);
             Dal::AAD::SetTape(tapes[n_thread]);
+            Dal::AAD::Clear(*Dal::AAD::Tape());
             std::unique_ptr<TestModel_> model = std::make_unique<TestModel_>(fwd, vol, numeraire, strike, expiry);
             ModelInit(*model);
             auto& results = final_results[n_thread];

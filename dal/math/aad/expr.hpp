@@ -592,16 +592,14 @@ namespace Dal::AAD {
 namespace Dal::AAD {
     using Number_ = xad::adj<double>::active_type;
 
-    extern thread_local Tape_* tape_;
     extern thread_local std::mutex tape_mutex_;
 
     FORCE_INLINE Tape_* Tape() {
-        return tape_;
+        return Tape_::getActive();
     }
 
     FORCE_INLINE void SetTape(Tape_& tape) {
         std::lock_guard<std::mutex> lock(tape_mutex_);
-        tape_ = &tape;
         Tape_::deactivateAll();
         tape.activate();
     }
@@ -643,7 +641,7 @@ namespace Dal::AAD {
     }
 
     FORCE_INLINE void PutOnTape(Number_& n) {
-        tape_->registerInput(n);
+        Tape_::getActive()->registerInput(n);
     }
 
 

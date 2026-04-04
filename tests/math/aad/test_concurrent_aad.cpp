@@ -8,8 +8,6 @@
 #include <dal/math/aad/aad.hpp>
 #include <dal/concurrency/threadpool.hpp>
 
-#include "gmock/gmock-spec-builders.h"
-
 using Dal::ThreadPool_;
 using Dal::Vector_;
 using Dal::AAD::Tape_;
@@ -38,6 +36,7 @@ TEST(AADTest, TestAADMutiThread) {
     for (size_t i = 0; i < n_threads + 1; ++i)
         tapes.emplace_back(false);
     Tape_* mainThreadPtr = Dal::AAD::Tape();
+    mainThreadPtr->deactivateAll();
 
     Vector_<TaskHandle_> futures;
     futures.reserve(n_rounds / batch_size + 1);
@@ -52,16 +51,16 @@ TEST(AADTest, TestAADMutiThread) {
         const auto rounds_in_tasks = std::min(rounds_left, batch_size);
         futures.push_back(pool->SpawnTask([&, rounds_in_tasks]() {
             const size_t n_thread = ThreadPool_::ThreadNum();
-            Dal::AAD::Activate(tapes[n_thread]);
             Dal::AAD::SetTape(tapes[n_thread]);
+            Dal::AAD::Clear(*Dal::AAD::Tape());
 
             SimpleModel_ model(s1, s2);
             Dal::AAD::Rewind(*Dal::AAD::Tape());
 
             Dal::AAD::PutOnTape(model.s1_);
             Dal::AAD::PutOnTape(model.s2_);
-            Dal::AAD::Mark(*Dal::AAD::Tape());
             Dal::AAD::NewRecording(*Dal::AAD::Tape());
+            Dal::AAD::Mark(*Dal::AAD::Tape());
 
             auto& result = final_results[n_thread];
 

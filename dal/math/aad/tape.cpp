@@ -102,7 +102,6 @@ namespace Dal::AAD {
     void Clear(Tape_& tape) {
         auto& state = State(tape);
         tape.clearAll();
-        tape.newRecording();
         state.start_ = tape.getPosition();
         state.mark_ = state.start_;
     }
@@ -139,7 +138,10 @@ namespace Dal::AAD {
     }
 
     void NewRecording(Tape_& tape) {
+        auto& state = State(tape);
         tape.newRecording();
+        state.start_ = tape.getPosition();
+        state.mark_ = state.start_;
     }
 
     void Activate(Tape_& tape) {
