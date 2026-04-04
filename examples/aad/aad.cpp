@@ -91,6 +91,7 @@ int main() {
         PutOnTape(numeraire_aad);
         PutOnTape(strike_aad);
         PutOnTape(expiry_aad);
+        AAD::NewRecording(*AAD::Tape());
 
         Number_  price_aad{0.0};
         for (int i = 0; i < n_rounds; ++i) {

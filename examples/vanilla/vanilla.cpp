@@ -88,6 +88,7 @@ int main() {
         PutOnTape(div_aad);
         PutOnTape(strike_aad);
         PutOnTape(expiry_aad);
+        AAD::NewRecording(*AAD::Tape());
 
         AAD::Rewind(*AAD::Tape());
         Number_ price_aad = BlackTest(spot_aad, vol_aad, rate_aad, div_aad, strike_aad, expiry_aad, true);

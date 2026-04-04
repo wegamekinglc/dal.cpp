@@ -91,6 +91,7 @@ int main() {
         PutOnTape(div_aad);
         PutOnTape(strike_aad);
         PutOnTape(expiry_aad);
+        AAD::NewRecording(*AAD::Tape());
 
         auto price_aad = DigitalTest<Number_>(spot_aad, vol_aad, rate_aad, div_aad, strike_aad, expiry_aad);
         Adjoint(price_aad) = 1.0;
