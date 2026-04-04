@@ -31,13 +31,6 @@ TEST(AADTest, TestAADMutiThread) {
     ThreadPool_* pool = ThreadPool_::GetInstance();
     const size_t n_threads = pool->NumThreads();
 
-    Vector_<Dal::AAD::Tape_> tapes;
-    tapes.reserve(n_threads + 1);
-    for (size_t i = 0; i < n_threads + 1; ++i)
-        tapes.emplace_back(false);
-    Tape_* mainThreadPtr = Dal::AAD::Tape();
-    Dal::AAD::Deactivate(*mainThreadPtr);
-
     Vector_<TaskHandle_> futures;
     futures.reserve(n_rounds / batch_size + 1);
 
@@ -51,7 +44,6 @@ TEST(AADTest, TestAADMutiThread) {
         const auto rounds_in_tasks = std::min(rounds_left, batch_size);
         futures.push_back(pool->SpawnTask([&, rounds_in_tasks]() {
             const size_t n_thread = ThreadPool_::ThreadNum();
-            Dal::AAD::SetTape(tapes[n_thread]);
             Dal::AAD::Clear(*Dal::AAD::Tape());
 
             SimpleModel_ model(s1, s2);
@@ -89,7 +81,6 @@ TEST(AADTest, TestAADMutiThread) {
         for (size_t i = 0; i < greeks.size(); ++i)
         greeks[i] += res[i];
 
-    Dal::AAD::SetTape(*mainThreadPtr);
     ASSERT_NEAR(greeks[0] / n_rounds, 6.0, 1e-8);
     ASSERT_NEAR(greeks[1], 3.0, 1e-8);
     ASSERT_NEAR(greeks[2], 2.0, 1e-8);

@@ -79,7 +79,16 @@ namespace Dal::AAD {
 #include <XAD/XAD.hpp>
 
 namespace Dal::AAD {
-    using Tape_ = xad::adj<double>::tape_type;
+
+    class Tape_ {
+    public:
+        using tape_type = xad::adj<double>::tape_type;
+        tape_type tape_;
+        tape_type::position_type start_;
+        tape_type::position_type mark_;
+
+        explicit Tape_(bool activate = true) : tape_(activate), start_(tape_.getPosition()), mark_(start_) { }
+    };
 
     void Clear(Tape_& tape);
     void Mark(Tape_& tape);
