@@ -82,75 +82,51 @@ namespace Dal::AAD {
 #include <unordered_map>
 
 namespace Dal::AAD {
-    namespace {
-        struct TapeState_ {
-            Tape_::position_type start_{};
-            Tape_::position_type mark_{};
-        };
-
-        thread_local std::unordered_map<Tape_*, TapeState_> tape_state_;
-
-        auto State(Tape_& tape) -> TapeState_& {
-            auto [it, inserted] = tape_state_.try_emplace(&tape);
-            if (inserted) {
-                it->second.start_ = tape.getPosition();
-                it->second.mark_ = it->second.start_;
-            }
-            return it->second;
-        }
-    }
 
     void Clear(Tape_& tape) {
-        auto& state = State(tape);
-        tape.clearAll();
-        state.start_ = tape.getPosition();
-        state.mark_ = state.start_;
+        tape.tape_.clearAll();
+        tape.start_ = tape.tape_.getPosition();
+        tape.mark_ = tape.start_;
     }
 
     void Mark(Tape_& tape) {
-        auto& state = State(tape);
-        state.mark_ = tape.getPosition();
+        tape.mark_ = tape.tape_.getPosition();
     }
 
     void Rewind(Tape_& tape) {
-        auto& state = State(tape);
-        tape.resetTo(state.start_);
+        tape.tape_.resetTo(tape.start_);
     }
 
     void RewindToMark(Tape_& tape) {
-        auto& state = State(tape);
-        tape.resetTo(state.mark_);
+        tape.tape_.resetTo(tape.mark_);
     }
 
     void PropagateMarkToStart(Tape_& tape) {
-        auto& state = State(tape);
         RewindToMark(tape);
-        tape.computeAdjointsTo(state.start_);
+        tape.tape_.computeAdjointsTo(tape.start_);
     }
 
     void PropagateToStart(Tape_& tape) {
-        auto& state = State(tape);
-        tape.computeAdjointsTo(state.start_);
+        tape.tape_.computeAdjointsTo(tape.start_);
     }
 
     void PropagateToMark(Tape_& tape) {
-        auto& state = State(tape);
-        tape.computeAdjointsTo(state.mark_);
+        tape.tape_.computeAdjointsTo(tape.mark_);
     }
 
     void NewRecording(Tape_& tape) {
-        auto& state = State(tape);
-        tape.newRecording();
-        state.start_ = tape.getPosition();
-        state.mark_ = state.start_;
+        tape.tape_.newRecording();
+        tape.start_ = tape.tape_.getPosition();
+        tape.mark_ = tape.start_;
     }
 
     void Activate(Tape_& tape) {
-        tape.activate();
+        if (!tape.tape_.isActive())
+            tape.tape_.activate();
     }
 
     void Deactivate(Tape_& tape) {
-        tape.deactivate();
+        tape.tape_.deactivate();
     }
 } // namespace Dal::AAD
 #endif

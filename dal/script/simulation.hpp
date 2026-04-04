@@ -107,7 +107,7 @@ namespace Dal::Script {
         SimResults_ results(Vector::Join(mdl->ParameterLabels(), product.ConstVarNames()));
 
         Vector_<TaskHandle_> futures;
-        const int batch_size = std::max(BATCH_SIZE, static_cast<int>(n_paths / nThreads) + 1);
+        const int batch_size = std::min(BATCH_SIZE, static_cast<int>(n_paths / nThreads) + 1);
         futures.reserve(n_paths / batch_size + 1);
         Vector_<> simResults;
         simResults.reserve(n_paths / batch_size + 1);
@@ -176,17 +176,11 @@ namespace Dal::Script {
         const size_t nThreads = pool->NumThreads();
 
         Vector_<TaskHandle_> futures;
-        const int batchSize = std::max(BATCH_SIZE, static_cast<int>(n_paths / nThreads) + 1);
+        const int batchSize = std::min(BATCH_SIZE, static_cast<int>(n_paths / nThreads) + 1);
 
         int firstPath = 0;
         int pathsLeft = static_cast<int>(n_paths);
         auto payoffIndex = product.PayOffIdx();
-        Vector_<AAD::Tape_> tapes;
-        tapes.reserve(nThreads + 1);
-        for (size_t i = 0; i < nThreads + 1; ++i)
-            tapes.emplace_back(false);
-        AAD::Tape_* mainThreadPtr = AAD::Tape();
-        AAD::Deactivate(*mainThreadPtr);
 
         SimResults_ values(Vector::Join(mdl->ParameterLabels(), product.ConstVarNames()));
         Vector_<SimResults_> simResults(nThreads, values);
@@ -195,7 +189,6 @@ namespace Dal::Script {
             auto pathsInTask = std::min(pathsLeft, batchSize);
             futures.push_back(pool->SpawnTask([&, firstPath, pathsInTask]() {
                 const size_t threadNum = ThreadPool_::ThreadNum();
-                Dal::AAD::SetTape(tapes[threadNum]);
                 Dal::AAD::Clear(*Dal::AAD::Tape());
                 AAD::Rewind(*AAD::Tape());
                 std::unique_ptr<AAD::Model_<AAD::Number_>> model = mdl->Clone();
@@ -266,7 +259,6 @@ namespace Dal::Script {
         for (auto& future : futures)
             pool->ActiveWait(future);
 
-        AAD::SetTape(*mainThreadPtr);
         SimResults_ rtn(Dal::Vector::Join(mdl->ParameterLabels(), product.ConstVarNames()));
         for (auto& res: simResults) {
             rtn.aggregated_ += res.aggregated_;

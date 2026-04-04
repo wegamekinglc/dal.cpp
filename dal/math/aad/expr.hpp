@@ -12,16 +12,10 @@
 #include <dal/math/aad/tape.hpp>
 
 namespace Dal::AAD {
-    extern thread_local Tape_* tape_;
-    extern thread_local std::mutex tape_mutex_;
 
     FORCE_INLINE Tape_* Tape() {
-        return tape_;
-    }
-
-    FORCE_INLINE void SetTape(Tape_& tape) {
-        std::lock_guard<std::mutex> lock(tape_mutex_);
-        tape_ = &tape;
+        thread_local Tape_ tape;
+        return &tape;
     }
 
     template <class E_> struct Expression_ {
@@ -477,7 +471,7 @@ namespace Dal::AAD {
         TapNode_* node_;
 
         template <size_t N_>
-        FORCE_INLINE TapNode_* CreateMultiNode() { return tape_->RecordNode<N_>(); }
+        FORCE_INLINE TapNode_* CreateMultiNode() { return Tape()->RecordNode<N_>(); }
 
         template <class E_> void FromExpr(const Expression_<E_>& e) {
             auto* node = this->CreateMultiNode<E_::numNumbers_>();
@@ -590,16 +584,9 @@ namespace Dal::AAD {
 namespace Dal::AAD {
     using Number_ = xad::adj<double>::active_type;
 
-    extern thread_local std::mutex tape_mutex_;
-
     FORCE_INLINE Tape_* Tape() {
-        return Tape_::getActive();
-    }
-
-    FORCE_INLINE void SetTape(Tape_& tape) {
-        std::lock_guard<std::mutex> lock(tape_mutex_);
-        Tape_::deactivateAll();
-        tape.activate();
+        thread_local Tape_ tape;
+        return &tape;
     }
 
     using xad::operator*;
@@ -639,7 +626,7 @@ namespace Dal::AAD {
     }
 
     FORCE_INLINE void PutOnTape(Number_& n) {
-        Tape_::getActive()->registerInput(n);
+        Tape()->tape_.registerInput(n);
     }
 
 

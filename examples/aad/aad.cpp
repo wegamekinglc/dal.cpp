@@ -128,7 +128,7 @@ int main() {
 #ifndef DAL_USE_XAD_AAD
         Tape tape;
 #else
-        auto& tape = *AAD::Tape();
+        auto& tape = AAD::Tape()->tape_;
 #endif
 
         timer.Reset();
