@@ -8,6 +8,10 @@ list(FILTER DAL_FILES EXCLUDE REGEX "${PROJECT_SOURCE_DIR}/dal/storage/_reposito
 
 add_library(dal_library ${DAL_FILES})
 
+if (DAL_USE_XAD_AAD)
+    target_link_libraries(dal_library XAD::xad)
+endif()
+
 set_target_properties(dal_library PROPERTIES
         EXPORT_NAME ${PACKAGE_NAME}
         OUTPUT_NAME ${PACKAGE_NAME}

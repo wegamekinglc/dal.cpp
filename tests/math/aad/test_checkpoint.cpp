@@ -37,39 +37,41 @@ struct TestModel_ {
 
 
 auto ModelInit(TestModel_& model) {
-    Rewind(*Number_::Tape());
+    Rewind(*Tape());
     PutOnTape(model.fwd_);
     PutOnTape(model.vol_);
     PutOnTape(model.numeraire_);
     PutOnTape(model.strike_);
     PutOnTape(model.expiry_);
-    Mark(*Number_::Tape());
+    NewRecording(*Tape());
+    Mark(*Tape());
 }
 
 
 TEST(AADTest, TestWithCheckpoint) {
-    Clear(*Number_::Tape());
+    Clear(*Tape());
 
     Number_ s1(1.0);
     Number_ s2(2.0);
 
     PutOnTape(s1);
     PutOnTape(s2);
+    NewRecording(*Tape());
 
     Number_ s3 = s1 + s2;
-    Mark(*Number_::Tape());
+    Mark(*Tape());
     Number_ value = s3 * 2.0;
     Adjoint(value) = 1.0;
-    PropagateToMark(*Number_::Tape());
+    PropagateToMark(*Tape());
 
     ASSERT_NEAR(Value(value), 6.0, 1e-10);
     ASSERT_NEAR(Adjoint(s3), 2.0, 1e-10);
-    PropagateMarkToStart(*Number_::Tape());
+    PropagateMarkToStart(*Tape());
     ASSERT_NEAR(Adjoint(s1), 2.0, 1e-10);
 }
 
 TEST(AADTest, TestWithCheckpointWithForLoop) {
-    Clear(*Number_::Tape());
+    Clear(*Tape());
 
     for (int m = 0; m < 3; ++m) {
 
@@ -79,18 +81,19 @@ TEST(AADTest, TestWithCheckpointWithForLoop) {
 
         PutOnTape(s1);
         PutOnTape(s2);
+        NewRecording(*Tape());
 
         Number_ s3 = s1 + s2;
-        Mark(*Number_::Tape());
+        Mark(*Tape());
         for (int i = 0; i < n; ++i) {
-            RewindToMark(*Number_::Tape());
+            RewindToMark(*Tape());
             Number_ value;
             if (i % 2 == 0)
                 value = s3 * 1.01;
             else
                 value = s3 * 0.99;
             Adjoint(value) = 1.0;
-            PropagateToMark(*Number_::Tape());
+            PropagateToMark(*Tape());
             if (i % 2 == 0) {
                 ASSERT_NEAR(Value(value), 3 * 1.01, 1e-10);
                 ASSERT_NEAR(Adjoint(s3), (i + 1) / 2 * 2 + (i + 1) % 2 * 1.01, 1e-10);
@@ -99,7 +102,7 @@ TEST(AADTest, TestWithCheckpointWithForLoop) {
                 ASSERT_NEAR(Adjoint(s3), (i + 1) / 2 * 2 + (i + 1) % 2 * 0.99, 1e-10);
             }
         }
-        PropagateMarkToStart(*Number_::Tape());
+        PropagateMarkToStart(*Tape());
         ASSERT_NEAR(Adjoint(s1), n, 1e-10);
         ASSERT_NEAR(Adjoint(s2), n, 1e-10);
     }
@@ -122,8 +125,12 @@ TEST(AADTest, TestWithCheckpointWithMultiThreading) {
     Vector_<TaskHandle_> futures;
     futures.reserve(n_rounds / batch_size + 1);
 
-    Vector_<AAD::Tape_> tapes(n_threads);
-    Tape_* mainThreadPtr = Number_::Tape();
+    Vector_<AAD::Tape_> tapes;
+    tapes.reserve(n_threads);
+    for (size_t i = 0; i < n_threads; ++i)
+        tapes.emplace_back(false);
+    Tape_* mainThreadPtr = AAD::Tape();
+    AAD::Deactivate(*mainThreadPtr);
 
     int first_round = 0;
     int rounds_left = n_rounds;
@@ -137,13 +144,14 @@ TEST(AADTest, TestWithCheckpointWithMultiThreading) {
         futures.push_back(pool->SpawnTask([&, rounds_in_tasks]() {
             const size_t n_thread = ThreadPool_::ThreadNum();
             Dal::AAD::SetTape(tapes[n_thread]);
+            Dal::AAD::Clear(*Dal::AAD::Tape());
             std::unique_ptr<TestModel_> model = std::make_unique<TestModel_>(fwd, vol, numeraire, strike, expiry);
             ModelInit(*model);
             auto& results = final_results[n_thread];
 
             double sum_val = 0.0;
             for (size_t i = 0; i < rounds_in_tasks; ++i) {
-                RewindToMark(*Number_::Tape());
+                RewindToMark(*Tape());
                 Number_ res = BlackTest(model->fwd_,
                                         model->vol_,
                                         model->numeraire_,
@@ -151,11 +159,11 @@ TEST(AADTest, TestWithCheckpointWithMultiThreading) {
                                         model->expiry_,
                                         is_call);
                 Adjoint(res) = 1.0;
-                PropagateToMark(*Number_::Tape());
+                PropagateToMark(*Tape());
                 sum_val += Value(res);
             }
 
-            PropagateMarkToStart(*Number_::Tape());
+            PropagateMarkToStart(*Tape());
             results[0] += sum_val;
             results[1] += Adjoint(model->fwd_) / static_cast<double>(n_rounds);
             results[2] += Adjoint(model->vol_) / static_cast<double>(n_rounds);
