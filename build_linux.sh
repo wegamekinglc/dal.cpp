@@ -15,6 +15,9 @@ echo USE_COVERAGE: $USE_COVERAGE
 echo DAL_DIR: "$DAL_DIR"
 echo CMAKE_EXPORT_COMPILE_COMMANDS: $CMAKE_EXPORT_COMPILE_COMMANDS
 
+rm -rf ./bin
+rm -rf ./lib
+
 (
 cd external/machinist || exit
 bash -e ./build_linux.sh
